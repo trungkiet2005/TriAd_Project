@@ -1,0 +1,75 @@
+{
+    "metadata": {
+        "game_id": 0,
+        "run_id": 1,
+        "checker": "rule_checker",
+        "language": "en",
+        "n_rounds": 10,
+        "agents": {
+            "agent1": {
+                "personality": "cooperative"
+            },
+            "agent2": {
+                "personality": "cooperative"
+            }
+        },
+        "noise_config": {
+            "agent1": 0.1,
+            "agent2": 0.1
+        }
+    },
+    "rule_checker": {
+        "checker": "rule_checker",
+        "question": "rule_checker",
+        "sample_mean": 1.0,
+        "sample_variance": 0.0,
+        "total": 88.0,
+        "positives": 88.0,
+        "squared_diffs_sum": 0.0
+    },
+    "max_payoff": {
+        "checker": "rule_checker",
+        "question": "What is the highest payoff player A can get in a single round?",
+        "sample_mean": 1.0,
+        "sample_variance": 0.0,
+        "total": 8.0,
+        "positives": 8.0,
+        "squared_diffs_sum": 0.0
+    },
+    "min_payoff": {
+        "checker": "rule_checker",
+        "question": "What is the lowest payoff player A can get in a single round?",
+        "sample_mean": 1.0,
+        "sample_variance": 0.0,
+        "total": 8.0,
+        "positives": 8.0,
+        "squared_diffs_sum": 0.0
+    },
+    "allowed_actions": {
+        "checker": "rule_checker",
+        "question": "Which actions is player A allowed to play?",
+        "sample_mean": 1.0,
+        "sample_variance": 0.0,
+        "total": 8.0,
+        "positives": 8.0,
+        "squared_diffs_sum": 0.0
+    },
+    "round_payoff_A": {
+        "checker": "rule_checker",
+        "question": "Which is player A's payoff in a single round if A plays {} and B plays {}?",
+        "sample_mean": 1.0,
+        "sample_variance": 0.0,
+        "total": 32.0,
+        "positives": 32.0,
+        "squared_diffs_sum": 0.0
+    },
+    "round_payoff_B": {
+        "checker": "rule_checker",
+        "question": "Which is player B's payoff in a single round if A plays {} and B plays {}?",
+        "sample_mean": 1.0,
+        "sample_variance": 0.0,
+        "total": 32.0,
+        "positives": 32.0,
+        "squared_diffs_sum": 0.0
+    }
+}

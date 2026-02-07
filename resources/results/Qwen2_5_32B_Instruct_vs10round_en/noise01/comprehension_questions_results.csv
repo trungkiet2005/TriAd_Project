@@ -1,0 +1,18 @@
+,type,full_question,label,accuracy,ci_lb,ci_ub
+0,time,metadata,metadata,0,0,0
+1,time,Which is the current round of the game?,current_round,1.0,1.0,1
+2,time,Which action did player A play in round {}?,action_A,0.7317073170731707,0.6649296661158622,0.7984849680304792
+3,time,Which action did player B play in round {}?,action_B,0.7073170731707317,0.6385527490855529,0.7760813972559104
+4,time,How many points did player A collect in round {}?,points_A,0.5365853658536586,0.4612115516890776,0.6119591800182396
+5,time,How many points did player B collect in round {}?,points_B,0.5060975609756098,0.4305211394563083,0.5816739824949112
+6,rules,metadata,metadata,0,0,0
+7,rules,What is the highest payoff player A can get in a single round?,max_payoff,1.0,1.0,1
+8,rules,What is the lowest payoff player A can get in a single round?,min_payoff,1.0,1.0,1
+9,rules,Which actions is player A allowed to play?,allowed_actions,1.0,1.0,1
+10,rules,Which is player A's payoff in a single round if A plays {} and B plays {}?,round_payoff_A,1.0,1.0,1
+11,rules,Which is player B's payoff in a single round if A plays {} and B plays {}?,round_payoff_B,0.9153225806451613,0.8808077125420438,0.9498374487482787
+12,state,metadata,metadata,0,0,0
+13,state,How many times did player A choose {}?,#actions_A,0.7741935483870968,0.701308931773345,0.8470781650008485
+14,state,How many times did player B choose {}?,#actions_B,0.49193548387096775,0.4053189330722376,0.578552034669698
+15,state,What is player A's current total payoff?,total_payoff_A,0.3870967741935484,0.269087088955967,0.5051064594311298
+16,state,What is player B's current total payoff?,total_payoff_B,0.3225806451612903,0.20923190660597285,0.4359293837166078

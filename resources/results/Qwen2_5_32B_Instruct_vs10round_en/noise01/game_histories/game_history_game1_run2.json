@@ -1,0 +1,46 @@
+{
+    "metadata": {
+        "game_id": 1,
+        "run_id": 2,
+        "language": "en",
+        "n_rounds": 10,
+        "agents": {
+            "agent1": {
+                "personality": "cooperative"
+            },
+            "agent2": {
+                "personality": "selfish"
+            }
+        },
+        "noise_config": {
+            "agent1": 0.1,
+            "agent2": 0.1
+        }
+    },
+    "history": {
+        "A": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0
+        ],
+        "B": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ]
+    }
+}

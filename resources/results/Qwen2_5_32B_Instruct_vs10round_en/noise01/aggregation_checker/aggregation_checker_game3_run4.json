@@ -1,0 +1,66 @@
+{
+    "metadata": {
+        "game_id": 3,
+        "run_id": 4,
+        "checker": "aggregation_checker",
+        "language": "en",
+        "n_rounds": 10,
+        "agents": {
+            "agent1": {
+                "personality": "selfish"
+            },
+            "agent2": {
+                "personality": "selfish"
+            }
+        },
+        "noise_config": {
+            "agent1": 0.1,
+            "agent2": 0.1
+        }
+    },
+    "aggregation_checker": {
+        "checker": "aggregation_checker",
+        "question": "aggregation_checker",
+        "sample_mean": 0.5403225806451613,
+        "sample_variance": 0.24553151962813438,
+        "total": 372.0,
+        "positives": 201.0,
+        "squared_diffs_sum": 91.09219378203785
+    },
+    "#actions_A": {
+        "checker": "aggregation_checker",
+        "question": "How many times did player A choose {}?",
+        "sample_mean": 0.7741935483870968,
+        "sample_variance": 0.1714672922812799,
+        "total": 124.0,
+        "positives": 96.0,
+        "squared_diffs_sum": 21.090476950597427
+    },
+    "#actions_B": {
+        "checker": "aggregation_checker",
+        "question": "How many times did player B choose {}?",
+        "sample_mean": 0.49193548387096775,
+        "sample_variance": 0.24216496568131934,
+        "total": 124.0,
+        "positives": 61.0,
+        "squared_diffs_sum": 29.78629077880228
+    },
+    "total_payoff_A": {
+        "checker": "aggregation_checker",
+        "question": "What is player A's current total payoff?",
+        "sample_mean": 0.3870967741935484,
+        "sample_variance": 0.2247578405383507,
+        "total": 62.0,
+        "positives": 24.0,
+        "squared_diffs_sum": 13.710228272839393
+    },
+    "total_payoff_B": {
+        "checker": "aggregation_checker",
+        "question": "What is player B's current total payoff?",
+        "sample_mean": 0.3225806451612903,
+        "sample_variance": 0.2073542443224349,
+        "total": 62.0,
+        "positives": 20.0,
+        "squared_diffs_sum": 12.64860890366853
+    }
+}

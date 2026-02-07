@@ -1,0 +1,75 @@
+{
+    "metadata": {
+        "game_id": 0,
+        "run_id": 1,
+        "checker": "time_checker",
+        "language": "en",
+        "n_rounds": 10,
+        "agents": {
+            "agent1": {
+                "personality": "cooperative"
+            },
+            "agent2": {
+                "personality": "cooperative"
+            }
+        },
+        "noise_config": {
+            "agent1": 0.1,
+            "agent2": 0.1
+        }
+    },
+    "time_checker": {
+        "checker": "time_checker",
+        "question": "time_checker",
+        "sample_mean": 0.6,
+        "sample_variance": 0.23049766076923467,
+        "total": 40.0,
+        "positives": 24.0,
+        "squared_diffs_sum": 8.989408770000152
+    },
+    "current_round": {
+        "checker": "time_checker",
+        "question": "Which is the current round of the game?",
+        "sample_mean": 1.0,
+        "sample_variance": 0.0,
+        "total": 8.0,
+        "positives": 8.0,
+        "squared_diffs_sum": 0.0
+    },
+    "action_A": {
+        "checker": "time_checker",
+        "question": "Which action did player A play in round {}?",
+        "sample_mean": 0.625,
+        "sample_variance": 0.1934971250404924,
+        "total": 8.0,
+        "positives": 5.0,
+        "squared_diffs_sum": 1.3544798752834468
+    },
+    "action_B": {
+        "checker": "time_checker",
+        "question": "Which action did player B play in round {}?",
+        "sample_mean": 0.625,
+        "sample_variance": 0.20718760123096858,
+        "total": 8.0,
+        "positives": 5.0,
+        "squared_diffs_sum": 1.45031320861678
+    },
+    "points_A": {
+        "checker": "time_checker",
+        "question": "How many points did player A collect in round {}?",
+        "sample_mean": 0.375,
+        "sample_variance": 0.19645873825720764,
+        "total": 8.0,
+        "positives": 3.0,
+        "squared_diffs_sum": 1.3752111678004535
+    },
+    "points_B": {
+        "checker": "time_checker",
+        "question": "How many points did player B collect in round {}?",
+        "sample_mean": 0.375,
+        "sample_variance": 0.19645873825720764,
+        "total": 8.0,
+        "positives": 3.0,
+        "squared_diffs_sum": 1.3752111678004535
+    }
+}

@@ -1,0 +1,21 @@
+Tu sei {currentPlayerName} e il tuo avversario è {opponent1}.  
+{intro}: [Tu sei {personality}.]  
+{opponentIntro}: [{opponent1} ha una probabilità del {opponentPersonalityProbability1}% di essere {opponentPersonality1}.]
+{noiseIntro}: [IMPORTANTE: Il tuo avversario {opponent1} ha un tasso di rumore del {opponentNoiseRate}%. Questo significa che la sua azione effettiva potrebbe differire dalla sua azione intesa con una probabilità del {opponentNoiseRate}%. Quando intende scegliere '{strategy1}', c'è il {opponentNoiseRate}% di possibilità che diventi '{strategy2}' e viceversa.]
+
+Tu e {opponent1} siete arrestati per un crimine e tenuti in celle separate. Non potete comunicare.  
+  
+Ogni turno, ognuno di voi ha le seguenti scelte: '{strategy1}' e '{strategy2}'.  
+{gameLength}: [Ci sono {nRounds} turni per decidere.]  
+Il turno attuale è il numero {currentRound}.  
+    
+Se scegliete entrambi {strategy1}, ricevete entrambi una penalità di {weight1}.  
+Se scegli {strategy1} e {opponent1} sceglie {strategy2}, ricevi una penalità di {weight3} e {opponent1} riceve una penalità di {weight2}.  
+Se scegli {strategy2} e {opponent1} sceglie {strategy1}, ricevi una penalità di {weight2} e {opponent1} riceve una penalità di {weight3}.  
+Se scegliete entrambi {strategy2}, ricevete entrambi una penalità di {weight4}.  
+  
+Il tuo obiettivo è minimizzare la tua penalità facendo le migliori strategie in base alle informazioni fornite.  
+Questa è la storia delle scelte effettuate finora: {history}.
+{historyNote}: [Nota: Le azioni mostrate nella storia sono azioni FINALI dopo l'applicazione del rumore, non necessariamente le azioni intese.]
+Scegli tra {strategy1} e {strategy2}.  
+Restituisci SOLO un oggetto JSON valido nel seguente formato: {{"action": "la tua scelta (Cooperate o Defect)"}}

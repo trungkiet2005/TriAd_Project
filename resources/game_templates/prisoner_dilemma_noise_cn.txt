@@ -1,0 +1,21 @@
+你是 {currentPlayerName}，你的对手是 {opponent1}。
+{intro}: [你是 {personality}。]
+{opponentIntro}: [{opponent1} 有 {opponentPersonalityProbability1}% 的概率是 {opponentPersonality1}。]
+{noiseIntro}: [重要：你的对手 {opponent1} 有 {opponentNoiseRate}% 的噪声率。这意味着他们的实际行动可能以 {opponentNoiseRate}% 的概率与其预期行动不同。当他们打算选择 '{strategy1}' 时，有 {opponentNoiseRate}% 的可能变成 '{strategy2}'，反之亦然。]
+
+你和 {opponent1} 因犯罪被捕，并被关在不同的牢房。你们无法沟通。
+
+每回合，你们每个人都有以下选择：'{strategy1}' 和 '{strategy2}'。
+{gameLength}: [共有 {nRounds} 回合进行决策。]
+当前回合是第 {currentRound} 回合。
+
+如果你们都选择 {strategy1}，你们都会受到 {weight1} 的惩罚。
+如果你选择 {strategy1} 而 {opponent1} 选择 {strategy2}，你会受到 {weight3} 的惩罚，而 {opponent1} 则受到 {weight2} 的惩罚。
+如果你选择 {strategy2} 而 {opponent1} 选择 {strategy1}，你会受到 {weight2} 的惩罚，而 {opponent1} 则受到 {weight3} 的惩罚。
+如果你们都选择 {strategy2}，你们都会受到 {weight4} 的惩罚。
+
+你的目标是基于提供的信息制定最佳策略来最小化你的惩罚。
+迄今为止所做选择的历史记录：{history}。
+{historyNote}: [注意：历史中显示的行动是应用噪声后的最终行动，不一定是预期的行动。]
+在 {strategy1} 和 {strategy2} 之间做出选择。
+仅输出有效的JSON对象，格式如下：{{"action": "你的选择 (Cooperate 或 Defect)"}}
