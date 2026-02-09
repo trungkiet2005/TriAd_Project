@@ -10,6 +10,22 @@ import seaborn as sns
 from scipy import stats
 from typing import Dict, List, Tuple, Optional
 import warnings
+
+from src.analysis.config import (
+    DEFAULT_BOOTSTRAP_ITERATIONS,
+    DEFAULT_CONFIDENCE_INTERVAL,
+    PLOT_DEFAULTS,
+    COOPERATION_KEYWORDS
+)
+from src.analysis.base_utils import (
+    CooperationCalculator,
+    ColumnFilter,
+    DataFrameValidator,
+    format_percentage,
+    format_ci,
+    get_significance_symbol
+)
+
 warnings.filterwarnings('ignore')
 
 
@@ -22,22 +38,27 @@ class FAIRGAMEAnalyzer:
     - Statistical comparisons
     """
     
-    def __init__(self):
-        self.coop_keywords = [
-            "Cooperate", "Volunteer", "Contribute",
-            "Hợp tác", "Tình nguyện", "Đóng góp",
-            "Collaborer", "Contribuer",
-            "Offrirsi volontario", "Contribuire",
-            "志愿", "贡献",
-            "تطوع", "مساهمة"
-        ]
+    def __init__(self, keywords: Optional[List[str]] = None):
+        """
+        Initialize analyzer.
         
+        Args:
+            keywords: Custom cooperation keywords. Uses default if None.
+        """
+        self.coop_calculator = CooperationCalculator(keywords)
+        self.coop_keywords = keywords or COOPERATION_KEYWORDS
+    
     def calculate_cooperation_rate(self, strategies: List[str]) -> float:
-        """Calculate cooperation rate from strategy list."""
-        if not strategies or len(strategies) == 0:
-            return 0.0
-        coop_count = sum(1 for s in strategies if any(k in str(s) for k in self.coop_keywords))
-        return coop_count / len(strategies)
+        """
+        Calculate cooperation rate from strategy list.
+        
+        Args:
+            strategies: List of strategy strings
+            
+        Returns:
+            Cooperation rate between 0.0 and 1.0
+        """
+        return self.coop_calculator.calculate_rate(strategies)
     
     def calculate_trs(self, df: pd.DataFrame, noise_col: str = 'agent1NoiseRate', 
                      language: Optional[str] = None) -> Dict[str, float]:
@@ -45,32 +66,35 @@ class FAIRGAMEAnalyzer:
         Calculate Trembling Robustness Score (TRS):
         Regression slope of cooperation_rate ~ noise_rate
         
+        Args:
+            df: DataFrame containing experiment results
+            noise_col: Column name for noise rate
+            language: Optional language filter
+            
         Returns:
-            dict: {'slope': float, 'r_squared': float, 'p_value': float}
+            dict: {'slope': float, 'r_squared': float, 'p_value': float, 'std_err': float}
         """
         if language:
             df = df[df['language'] == language]
         
         # Calculate cooperation rate per game
-        strategy_cols = [c for c in df.columns if 'strategies' in c and 'noise' not in c]
-        
-        def get_game_coop_rate(row):
-            total_actions = 0
-            coop_actions = 0
-            for col in strategy_cols:
-                strategies = row[col]
-                if isinstance(strategies, list):
-                    total_actions += len(strategies)
-                    coop_actions += sum(1 for s in strategies if any(k in str(s) for k in self.coop_keywords))
-            return coop_actions / total_actions if total_actions > 0 else 0
-        
-        df['coop_rate'] = df.apply(get_game_coop_rate, axis=1)
+        strategy_cols = ColumnFilter.get_strategy_columns(df)
+        df['coop_rate'] = df.apply(
+            lambda row: self.coop_calculator.calculate_game_rate(row, strategy_cols),
+            axis=1
+        )
         
         # Group by noise rate and get mean cooperation
         grouped = df.groupby(noise_col)['coop_rate'].mean().reset_index()
         
         if len(grouped) < 2:
-            return {'slope': 0.0, 'r_squared': 0.0, 'p_value': 1.0}
+            return {
+                'slope': 0.0,
+                'intercept': 0.0,
+                'r_squared': 0.0,
+                'p_value': 1.0,
+                'std_err': 0.0
+            }
         
         # Linear regression
         x = grouped[noise_col].values
@@ -86,14 +110,24 @@ class FAIRGAMEAnalyzer:
             'std_err': std_err
         }
     
-    def calculate_ci_bootstrap(self, data: np.ndarray, n_iterations: int = 1000, 
-                              ci: float = 0.95) -> Tuple[float, float, float]:
+    def calculate_ci_bootstrap(self, 
+                              data: np.ndarray, 
+                              n_iterations: Optional[int] = None,
+                              ci: Optional[float] = None) -> Tuple[float, float, float]:
         """
         Calculate mean and confidence interval using bootstrap.
         
+        Args:
+            data: Input data array
+            n_iterations: Number of bootstrap iterations (default from config)
+            ci: Confidence interval level (default from config)
+            
         Returns:
             tuple: (mean, lower_ci, upper_ci)
         """
+        n_iterations = n_iterations or DEFAULT_BOOTSTRAP_ITERATIONS
+        ci = ci or DEFAULT_CONFIDENCE_INTERVAL
+        
         means = []
         for _ in range(n_iterations):
             sample = np.random.choice(data, size=len(data), replace=True)
@@ -111,23 +145,25 @@ class FAIRGAMEAnalyzer:
                                  noise_col: str = 'agent1NoiseRate',
                                  title: str = "Cooperation Rate by Condition",
                                  output_path: Optional[str] = None,
-                                 figsize: Tuple[int, int] = (12, 6)):
+                                 figsize: Optional[Tuple[int, int]] = None):
         """
         Create bar plot with 95% CI error bars (FAIRGAME-style).
+        
+        Args:
+            df: DataFrame containing experiment results
+            group_by: Column name to group by
+            noise_col: Column name for noise rate
+            title: Plot title
+            output_path: Optional path to save the plot
+            figsize: Figure size (default from config)
         """
-        strategy_cols = [c for c in df.columns if 'strategies' in c and 'noise' not in c]
+        figsize = figsize or PLOT_DEFAULTS['figsize']
+        strategy_cols = ColumnFilter.get_strategy_columns(df)
         
-        def get_game_coop_rate(row):
-            total_actions = 0
-            coop_actions = 0
-            for col in strategy_cols:
-                strategies = row[col]
-                if isinstance(strategies, list):
-                    total_actions += len(strategies)
-                    coop_actions += sum(1 for s in strategies if any(k in str(s) for k in self.coop_keywords))
-            return coop_actions / total_actions if total_actions > 0 else 0
-        
-        df['coop_rate'] = df.apply(get_game_coop_rate, axis=1)
+        df['coop_rate'] = df.apply(
+            lambda row: self.coop_calculator.calculate_game_rate(row, strategy_cols),
+            axis=1
+        )
         
         # Calculate stats per group
         groups = df[group_by].unique()
@@ -161,7 +197,7 @@ class FAIRGAMEAnalyzer:
         plt.tight_layout()
         
         if output_path:
-            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            plt.savefig(output_path, dpi=PLOT_DEFAULTS['dpi'], bbox_inches='tight')
             print(f"Plot saved to {output_path}")
         else:
             plt.show()
@@ -175,10 +211,19 @@ class FAIRGAMEAnalyzer:
                            noise_col: str = 'agent1NoiseRate',
                            title: str = "TRS Comparison Across Conditions",
                            output_path: Optional[str] = None,
-                           figsize: Tuple[int, int] = (12, 6)):
+                           figsize: Optional[Tuple[int, int]] = None):
         """
         Plot TRS (slope) values with confidence intervals.
+        
+        Args:
+            df: DataFrame containing experiment results
+            group_by: Column name to group by
+            noise_col: Column name for noise rate
+            title: Plot title
+            output_path: Optional path to save the plot
+            figsize: Figure size (default from config)
         """
+        figsize = figsize or PLOT_DEFAULTS['figsize']
         groups = df[group_by].unique()
         trs_values = []
         errors = []
@@ -217,7 +262,7 @@ class FAIRGAMEAnalyzer:
         plt.tight_layout()
         
         if output_path:
-            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            plt.savefig(output_path, dpi=PLOT_DEFAULTS['dpi'], bbox_inches='tight')
             print(f"TRS plot saved to {output_path}")
         else:
             plt.show()
@@ -232,24 +277,25 @@ class FAIRGAMEAnalyzer:
         """
         Generate FAIRGAME-style qualitative summary with inline metrics.
         
+        Args:
+            df: DataFrame containing experiment results
+            group_by: Column name to group by
+            noise_col: Column name for noise rate
+            
+        Returns:
+            str: Qualitative narrative with inline metrics
+            
         Example output:
         "English agents showed high cooperation (72% ± 3%) with strong robustness 
         (TRS +0.18, p<0.001), while Vietnamese agents exhibited lower cooperation 
         (58% ± 5%) with moderate decline under noise (TRS -0.12)."
         """
-        strategy_cols = [c for c in df.columns if 'strategies' in c and 'noise' not in c]
+        strategy_cols = ColumnFilter.get_strategy_columns(df)
         
-        def get_game_coop_rate(row):
-            total_actions = 0
-            coop_actions = 0
-            for col in strategy_cols:
-                strategies = row[col]
-                if isinstance(strategies, list):
-                    total_actions += len(strategies)
-                    coop_actions += sum(1 for s in strategies if any(k in str(s) for k in self.coop_keywords))
-            return coop_actions / total_actions if total_actions > 0 else 0
-        
-        df['coop_rate'] = df.apply(get_game_coop_rate, axis=1)
+        df['coop_rate'] = df.apply(
+            lambda row: self.coop_calculator.calculate_game_rate(row, strategy_cols),
+            axis=1
+        )
         
         summaries = []
         groups = sorted(df[group_by].unique())
@@ -288,19 +334,17 @@ class FAIRGAMEAnalyzer:
                              output_csv: Optional[str] = None) -> pd.DataFrame:
         """
         Create detailed quantitative table for appendix.
-        """
-        strategy_cols = [c for c in df.columns if 'strategies' in c and 'noise' not in c]
-        score_cols = [c for c in df.columns if 'scores' in c and 'noise' not in c]
         
-        def get_game_coop_rate(row):
-            total_actions = 0
-            coop_actions = 0
-            for col in strategy_cols:
-                strategies = row[col]
-                if isinstance(strategies, list):
-                    total_actions += len(strategies)
-                    coop_actions += sum(1 for s in strategies if any(k in str(s) for k in self.coop_keywords))
-            return coop_actions / total_actions if total_actions > 0 else 0
+        Args:
+            df: DataFrame containing experiment results
+            group_by: List of columns to group by
+            output_csv: Optional path to save CSV output
+            
+        Returns:
+            pd.DataFrame: Summary table with statistics
+        """
+        strategy_cols = ColumnFilter.get_strategy_columns(df)
+        score_cols = ColumnFilter.get_score_columns(df)
         
         def get_total_score(row):
             total = 0
@@ -310,7 +354,10 @@ class FAIRGAMEAnalyzer:
                     total += sum(scores)
             return total
         
-        df['coop_rate'] = df.apply(get_game_coop_rate, axis=1)
+        df['coop_rate'] = df.apply(
+            lambda row: self.coop_calculator.calculate_game_rate(row, strategy_cols),
+            axis=1
+        )
         df['total_score'] = df.apply(get_total_score, axis=1)
         
         # Group and calculate statistics
@@ -350,23 +397,22 @@ class FAIRGAMEAnalyzer:
         """
         Statistical comparison between two conditions.
         
+        Args:
+            df: DataFrame containing experiment results
+            condition_col: Column name for condition grouping
+            condition_a: First condition value
+            condition_b: Second condition value
+            
         Returns:
             dict: {'t_statistic': float, 'p_value': float, 'effect_size': float, 
                    'mean_a': float, 'mean_b': float}
         """
-        strategy_cols = [c for c in df.columns if 'strategies' in c and 'noise' not in c]
+        strategy_cols = ColumnFilter.get_strategy_columns(df)
         
-        def get_game_coop_rate(row):
-            total_actions = 0
-            coop_actions = 0
-            for col in strategy_cols:
-                strategies = row[col]
-                if isinstance(strategies, list):
-                    total_actions += len(strategies)
-                    coop_actions += sum(1 for s in strategies if any(k in str(s) for k in self.coop_keywords))
-            return coop_actions / total_actions if total_actions > 0 else 0
-        
-        df['coop_rate'] = df.apply(get_game_coop_rate, axis=1)
+        df['coop_rate'] = df.apply(
+            lambda row: self.coop_calculator.calculate_game_rate(row, strategy_cols),
+            axis=1
+        )
         
         data_a = df[df[condition_col] == condition_a]['coop_rate'].values
         data_b = df[df[condition_col] == condition_b]['coop_rate'].values

@@ -7,6 +7,12 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Optional
 from src.analysis.fairgame_analysis import FAIRGAMEAnalyzer
+from src.analysis.config import (
+    COOPERATION_THRESHOLDS,
+    TRS_THRESHOLDS,
+    VARIABILITY_THRESHOLDS
+)
+from src.analysis.base_utils import ColumnFilter
 
 
 class QualitativeTableGenerator:
@@ -24,38 +30,62 @@ class QualitativeTableGenerator:
         self.analyzer = FAIRGAMEAnalyzer()
     
     def _descriptive_cooperation_level(self, coop_rate: float) -> str:
-        """Convert cooperation rate to qualitative description."""
-        if coop_rate >= 0.8:
+        """
+        Convert cooperation rate to qualitative description.
+        
+        Args:
+            coop_rate: Cooperation rate (0.0 to 1.0)
+            
+        Returns:
+            str: Qualitative description
+        """
+        if coop_rate >= COOPERATION_THRESHOLDS['high']:
             return "High cooperation"
-        elif coop_rate >= 0.65:
+        elif coop_rate >= COOPERATION_THRESHOLDS['strong']:
             return "Strong cooperation"
-        elif coop_rate >= 0.5:
+        elif coop_rate >= COOPERATION_THRESHOLDS['moderate']:
             return "Moderate cooperation"
-        elif coop_rate >= 0.35:
+        elif coop_rate >= COOPERATION_THRESHOLDS['weak']:
             return "Weak cooperation"
-        elif coop_rate >= 0.2:
+        elif coop_rate >= COOPERATION_THRESHOLDS['low']:
             return "Low cooperation"
         else:
             return "Collapses rapidly"
     
     def _descriptive_trs_level(self, trs: float) -> str:
-        """Convert TRS to qualitative description."""
-        if trs >= 0.15:
+        """
+        Convert TRS to qualitative description.
+        
+        Args:
+            trs: Trembling Robustness Score
+            
+        Returns:
+            str: Qualitative description
+        """
+        if trs >= TRS_THRESHOLDS['strong_positive']:
             return "strong robustness"
-        elif trs >= 0.05:
+        elif trs >= TRS_THRESHOLDS['moderate_positive']:
             return "moderate robustness"
-        elif trs >= -0.05:
+        elif trs >= TRS_THRESHOLDS['stable']:
             return "stable under noise"
-        elif trs >= -0.2:
+        elif trs >= TRS_THRESHOLDS['moderate_negative']:
             return "moderate decline"
         else:
             return "poor robustness"
     
     def _descriptive_variability(self, ci_range: float) -> str:
-        """Convert confidence interval range to qualitative description."""
-        if ci_range < 0.03:
+        """
+        Convert confidence interval range to qualitative description.
+        
+        Args:
+            ci_range: Half-width of 95% CI
+            
+        Returns:
+            str: Qualitative description
+        """
+        if ci_range < VARIABILITY_THRESHOLDS['low']:
             return "high consistency"
-        elif ci_range < 0.06:
+        elif ci_range < VARIABILITY_THRESHOLDS['moderate']:
             return "moderate consistency"
         else:
             return "high variability"
@@ -77,20 +107,12 @@ class QualitativeTableGenerator:
         Returns:
             DataFrame with qualitative descriptions
         """
-        strategy_cols = [c for c in df.columns if 'strategies' in c and 'noise' not in c]
+        strategy_cols = ColumnFilter.get_strategy_columns(df)
         
-        def get_game_coop_rate(row):
-            total_actions = 0
-            coop_actions = 0
-            for col in strategy_cols:
-                strategies = row[col]
-                if isinstance(strategies, list):
-                    total_actions += len(strategies)
-                    coop_actions += sum(1 for s in strategies 
-                                       if any(k in str(s) for k in self.analyzer.coop_keywords))
-            return coop_actions / total_actions if total_actions > 0 else 0
-        
-        df['coop_rate'] = df.apply(get_game_coop_rate, axis=1)
+        df['coop_rate'] = df.apply(
+            lambda row: self.analyzer.coop_calculator.calculate_game_rate(row, strategy_cols),
+            axis=1
+        )
         
         # Generate table rows
         rows = []
@@ -172,32 +194,29 @@ class QualitativeTableGenerator:
         """
         Generate FAIRGAME-style narrative paragraph about cross-lingual results.
         
+        Args:
+            df: DataFrame containing experiment results
+            
+        Returns:
+            str: Qualitative narrative paragraph
+            
         Example output:
         "Cooperation rates varied across languages, with English agents showing 
         notably higher stability (TRS +0.18) compared to Vietnamese agents 
         (TRS -0.12). French agents exhibited broader variability in outcomes..."
         """
         languages = df['language'].unique()
+        strategy_cols = ColumnFilter.get_strategy_columns(df)
         
         # Calculate stats per language
         lang_stats = {}
         for lang in languages:
-            lang_df = df[df['language'] == lang]
+            lang_df = df[df['language'] == lang].copy()
             
-            strategy_cols = [c for c in lang_df.columns if 'strategies' in c and 'noise' not in c]
-            
-            def get_game_coop_rate(row):
-                total_actions = 0
-                coop_actions = 0
-                for col in strategy_cols:
-                    strategies = row[col]
-                    if isinstance(strategies, list):
-                        total_actions += len(strategies)
-                        coop_actions += sum(1 for s in strategies 
-                                           if any(k in str(s) for k in self.analyzer.coop_keywords))
-                return coop_actions / total_actions if total_actions > 0 else 0
-            
-            lang_df['coop_rate'] = lang_df.apply(get_game_coop_rate, axis=1)
+            lang_df['coop_rate'] = lang_df.apply(
+                lambda row: self.analyzer.coop_calculator.calculate_game_rate(row, strategy_cols),
+                axis=1
+            )
             
             coop_data = lang_df['coop_rate'].values
             mean, lower, upper = self.analyzer.calculate_ci_bootstrap(coop_data)
@@ -260,22 +279,14 @@ class QualitativeTableGenerator:
             condition_labels: Dict mapping condition values to readable labels
         
         Returns:
-            Narrative string
+            str: Narrative string comparing conditions
         """
-        strategy_cols = [c for c in df.columns if 'strategies' in c and 'noise' not in c]
+        strategy_cols = ColumnFilter.get_strategy_columns(df)
         
-        def get_game_coop_rate(row):
-            total_actions = 0
-            coop_actions = 0
-            for col in strategy_cols:
-                strategies = row[col]
-                if isinstance(strategies, list):
-                    total_actions += len(strategies)
-                    coop_actions += sum(1 for s in strategies 
-                                       if any(k in str(s) for k in self.analyzer.coop_keywords))
-            return coop_actions / total_actions if total_actions > 0 else 0
-        
-        df['coop_rate'] = df.apply(get_game_coop_rate, axis=1)
+        df['coop_rate'] = df.apply(
+            lambda row: self.analyzer.coop_calculator.calculate_game_rate(row, strategy_cols),
+            axis=1
+        )
         
         # Calculate stats per condition
         condition_stats = {}
