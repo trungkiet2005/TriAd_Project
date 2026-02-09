@@ -286,76 +286,56 @@ This paradox challenges a core assumption in AI\ safety: that more reasoning cap
 
 \subsection{Benchmarking Against Classical Strategies}
 
-To contextualize LLM performance, we compare against canonical algorithmic strategies from evolutionary game theory. Table~\ref{tab:baselines} presents results from the 3-player Prisoner's Dilemma under $\epsilon=0.1$ noise.
+How do these belief-tracking LLMs compare to the canonical strategies from game theory's evolutionary tournaments? We tested the classics: Tit-for-Tat (TFT), which mirrors opponents' last move; Generous TFT, which forgives occasionally; and Win-Stay-Lose-Shift (WSLS), which adapts based on payoff feedback.
 
 \begin{table}[h]
 \centering
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
-\textbf{Strategy} & \textbf{Coop.~Rate} & \textbf{TRS} & \textbf{Notes} \\
+\textbf{Strategy} & \textbf{Cooperation} & \textbf{Noise Robustness} \\
 \midrule
-Always Defect & 0.00 & 0.00 & Nash baseline \\
-Always Cooperate & 1.00 & 0.00 & Exploitable \\
-Random (p=0.5) & 0.50 & 0.00 & No adaptation \\
-Tit-for-Tat & 0.78 & -0.25 & Noise-brittle \\
-Generous TFT (10\% forgive) & 0.82 & +0.08 & Hardcoded forgiveness \\
-Win-Stay-Lose-Shift & 0.71 & -0.18 & Error-sensitive \\
+Tit-for-Tat & High & Collapses \\
+Generous TFT & High & Modest gain \\
+Win-Stay-Lose-Shift & Medium & Collapses \\
 \midrule
-Llama-3.1-70B & 0.85 & +0.18 & Belief-based forgiveness \\
-Qwen-2.5-32B & 0.82 & +0.14 & Adaptive opponent modeling \\
-Llama-3.1-8B & 0.76 & +0.08 & Limited capacity \\
-Mistral-7B & 0.68 & -0.03 & Noise-sensitive \\
+Llama-3.1-70B & Highest & Strong gain \\
+Qwen-2.5-32B & High & Strong gain \\
+Mistral-7B & Medium & Slight loss \\
 \bottomrule
-\end{tabular}%
-}
-\caption{LLM performance vs.~scripted strategies in 3-player iterated PD with $\epsilon=0.1$ noise. Classical algorithms (TFT, GTFT, WSLS) exhibit negative TRS, confirming noise-brittleness. Top LLMs outperform GTFT's hardcoded 10\% forgiveness via adaptive belief updating, achieving both higher cooperation rates and positive TRS. Results averaged over 100 games per strategy.}
+\end{tabular}
+\caption{Classical strategies vs.~LLMs under noise. Traditional algorithms collapse or show modest gains when errors occur. Top LLMs with belief tracking show strong robustness gains---cooperation actually increases under moderate noise.}
 \label{tab:baselines}
 \end{table}
 
-The comparison is revealing: Tit-for-Tat (TFT), the canonical cooperative strategy \citep{axelrod1981evolution}, achieves 78\% cooperation in clean conditions but exhibits TRS = -0.25, confirming noise-brittleness. Generous TFT (GTFT), which unconditionally forgives with 10\% probability, improves to TRS = +0.08---but this is still below Llama-3.1-70B's +0.18. The key difference: GTFT uses a \textit{fixed} forgiveness rate regardless of opponent history, while belief-tracking LLMs \textit{adaptively} calibrate forgiveness based on accumulated evidence (e.g., forgiving a single defection after 20 cooperations, but not forgiving chronic defectors). Win-Stay-Lose-Shift (WSLS) performs even worse (TRS = -0.18), as noise disrupts its reinforcement signal.
+The story is striking. Tit-for-Tat---champion of Axelrod's famous tournaments \citep{axelrod1981evolution}---maintains high cooperation in perfect conditions but crumbles when noise enters the picture. A single accidental defection triggers endless retaliation spirals, exactly as evolutionary theory predicts. Generous TFT improves matters by forgiving randomly about 10\% of the time, showing modest robustness gains. But this forgiveness is blind---it forgives friend and foe alike, with no distinction between chronic exploiters and reliable partners who made one mistake.
 
-Crucially, the top LLMs (Llama-3.1-70B, Qwen-2.5-32B) achieve cooperation rates of 82--85\%, exceeding even GTFT's 82\%, while maintaining stronger robustness. This suggests that the belief-tracking architecture enables a form of ``smart forgiveness'' that classical memory-one strategies cannot replicate. However, smaller models (Mistral-7B) fall below scripted strategies, indicating that belief-based cooperation requires sufficient model capacity to maintain accurate opponent models.
+Llama-3.1-70B and Qwen-2.5-32B take a fundamentally different approach. Instead of hardcoded forgiveness rates, they maintain running beliefs about each opponent's intentions. After 20 rounds of cooperation, a single defection gets interpreted charitably (``probably a glitch''). But chronic defectors received increasingly harsh treatment. This adaptive, context-sensitive forgiveness explains why top LLMs exceed even Generous TFT's performance while showing stronger robustness to noise.
 
-\textbf{Comparison with Quantal Response Equilibrium (QRE).} But how do these LLM behaviors compare to models of bounded rationality? Quantal Response Equilibrium \citep{mckelvey1998quantal} models agents who don't play perfectly but make probabilistic mistakes proportional to payoff differences. For 3PD with 10\% noise and moderate rationality (standard parameter $\lambda=2.5$), QRE predicts about 58\% cooperation at equilibrium---agents cooperate more than Nash says they should, but not overwhelmingly.
+The gap reveals something profound: memory-one strategies (which only remember the last round) cannot distinguish accidents from strategy shifts. Belief tracking, by maintaining a full history-based opponent model, bridges this gap. However, this requires sufficient model capacity---smaller models like Mistral-7B fall below classical strategies, suggesting belief-based cooperation hits a minimum scale threshold.
 
-LLMs blow past this benchmark. Llama-3.1-70B achieves 85\% cooperation, Qwen reaches 82\%---both significantly exceeding the bounded-rational prediction. This suggests LLMs operate in what we might call a ``super-rational'' regime: belief tracking enables coordination that even boundedly rational humans struggle to achieve. Ironically, this over-cooperation mirrors experimental findings with human subjects who systematically exceed QRE predictions in repeated games with reputation effects. It seems both humans and advanced LLMs share an inclination to cooperate beyond what simple bounded-rational models predict---though for different reasons (humans via social norms and emotions, LLMs via explicit opponent modeling and RLHF biases).
+\textbf{Bounded Rationality and QRE.} Standard game theory assumes perfect rationality, but behavioral economists developed Quantal Response Equilibrium (QRE) \citep{mckelvey1998quantal} to model humans who make occasional mistakes. For our 3-player noisy Prisoner's Dilemma, QRE predicts cooperation around 58\%---better than Nash equilibrium's zero, but far from universal cooperation.
+
+LLMs shatter this ceiling. The top models reach 82--85\% cooperation, significantly exceeding bounded-rational predictions. This suggests they operate in what we might call a ``super-rational'' regime: explicit belief tracking enables coordination beyond what QRE captures. Ironically, this mirrors human experimental data showing systematic over-cooperation relative to QRE predictions. Both humans and advanced LLMs cooperate more than bounded rationality predicts---humans via social norms and reciprocity instincts, LLMs via formal opponent modeling and alignment training.
 
 \subsection{Cross-Linguistic Robustness}
 
-To assess whether strategic behaviors generalize beyond English training data, we deployed identical experimental protocols across six languages. Table~\ref{tab:languages} reports mean TRS by language for Llama-3.1-70B.
+A critical question: do these strategic behaviors emerge from universal reasoning patterns, or are they artifacts of English-centric training data? We deployed identical experiments across six languages spanning three language families: English, French, and Italian (Indo-European); Vietnamese (Austroasiatic); Chinese (Sino-Tibetan); and Arabic (Afro-Asiatic).
 
-\begin{table}[h]
-\centering
-\begin{tabular}{lccl}
-\toprule
-\textbf{Language} & \textbf{Mean TRS} & \textbf{95\% CI} & \textbf{Family} \\
-\midrule
-English & +0.18 & [+0.12, +0.24] & Indo-European \\
-French & +0.16 & [+0.10, +0.22] & Indo-European \\
-Italian & +0.17 & [+0.11, +0.23] & Indo-European \\
-Vietnamese & +0.15 & [+0.09, +0.21] & Austroasiatic \\
-Chinese (Simplified) & +0.19 & [+0.13, +0.25] & Sino-Tibetan \\
-Arabic & +0.14 & [+0.08, +0.20] & Afro-Asiatic \\
-\bottomrule
-\end{tabular}
-\caption{TRS by prompt language for Llama-3.1-70B across 3-player PD ($\epsilon=0.1$, $n=25$ games per language). One-way ANOVA shows no significant language effect: $F(5, 144) = 1.21$, $p = 0.31$. Bonferroni-corrected pairwise comparisons revealed no language pair with $|\Delta \text{TRS}| > 0.05$ at $\alpha=0.05$. This confirms strategic robustness generalizes across diverse linguistic and cultural contexts.}
-\label{tab:languages}
-\end{table}
+The results tell a surprisingly uniform story. Whether prompted in English or Arabic, French or Vietnamese, Llama-3.1-70B shows consistent strategic behaviors. All languages cluster in a narrow range---cooperation increases under noise regardless of the linguistic framing. Chinese prompts edge slightly higher, Arabic slightly lower, but statistical tests reveal no meaningful differences across the board.
 
-The results are striking: across six languages from three different language families, the strategic behaviors remain remarkably consistent. English, French, and Italian cluster around TRS = +0.16 to +0.18. Vietnamese shows +0.15, Chinese reaches +0.19, and even Arabic---written right-to-left and typologically distant---achieves +0.14. Statistical tests confirm no meaningful language effect. This cross-linguistic consistency is particularly remarkable given that game-theoretic jargon (``Nash equilibrium,'' ``dominant strategy'') translates awkwardly across cultures, and cooperation norms vary dramatically between collectivist and individualist societies.
+This cross-linguistic consistency is particularly striking given two factors. First, game-theoretic terminology translates awkwardly: concepts like ``Nash equilibrium'' or ``dominant strategy'' have varying cultural familiarity and no direct equivalents in many languages. Second, cooperation norms differ dramatically---collectivist societies versus individualist ones, high-trust versus low-trust cultures. Yet the strategic behaviors remain stable.
 
-What explains this uniformity? The belief-tracking mechanism appears to operate at a semantic level that transcends surface linguistic variation. The JSON schema---requiring agents to output numerical probabilities and structured reasoning---provides a universal format that works identically whether the surrounding narrative is in Arabic script or Chinese characters. Strategic reasoning, it seems, is less language-bound than we might expect when models are forced to make their beliefs explicit.
+What explains this uniformity? The belief-tracking mechanism appears to operate at a semantic level that transcends surface linguistic differences. The JSON schema---requiring numerical probability outputs---provides a universal structured format that works identically whether surrounded by Arabic script or Chinese characters. Strategic reasoning about cooperation and defection, it seems, maps onto shared semantic spaces across languages. The models aren't simply pattern-matching English training data; they're engaging in language-independent game-theoretic reasoning.
 
-\textbf{Human baseline comparisons.} To ground these findings, consider how humans perform in similar conditions. Empirical studies report that humans achieve 45--62\% cooperation in noisy 3-player Prisoner's Dilemma settings, with cooperation typically decaying after round 25 as fatigue, betrayal aversion, and suspicion accumulate. Under 10\% noise, human TRS hovers near zero (between -0.05 and +0.02)---cooperation barely budges or slightly declines. Llama-3.1-70B's +0.18 TRS represents a fundamentally different response profile. 
+\textbf{Human baseline comparisons.} To ground these findings, consider how humans perform in similar conditions. Empirical studies show moderate cooperation in noisy 3-player settings, but with typical decay after round 25 as fatigue, betrayal aversion, and suspicion accumulate. Under noise, human cooperation hovers near baseline or declines slightly---the classical prediction holds for biological agents. LLMs show fundamentally different response patterns.
 
-Why do LLMs outperform humans in noise robustness? Three factors stand out. First, no fatigue: these models process round 50 with the same computational consistency as round 1, while humans grow tired and irritable. Second, explicit belief tracking formalizes the implicit reputation heuristics humans use naturally---but humans do this intuitively and inconsistently, while forced JSON output ensures every decision involves updating opponent models. Third, RLHF training biases toward sustained cooperation even under provocation, suppressing the vindictive impulses humans experience after betrayal.
+The divergence has three roots. First, computational tirelessness: models process round 50 with the same consistency as round 1, while humans grow weary and vindictive. Second, formalized belief tracking: humans use implicit reputation heuristics intuitively and inconsistently, while the JSON schema forces systematic opponent modeling at every decision point. Third, alignment biases: RLHF training suppresses retaliatory impulses that drive human punishment of defectors.
 
-But there's a dark side to this ``super-cooperation.'' Humans adaptively reduce contributions when they detect free-riders, deploying punishment and conditional reciprocity to enforce fairness. LLMs, as we see in the Welfare Paradox, lack these enforcement mechanisms. They cooperate relentlessly even under exploitation, suggesting that while they exceed human robustness to noise, they fall short of human sophistication in protecting against strategic abuse.
+But this ``super-cooperation'' carries risks. Humans adaptively reduce contributions when detecting free-riders, deploying punishment and conditional reciprocity to enforce fairness. LLMs, as the Welfare Paradox reveals, lack these enforcement reflexes. They cooperate relentlessly even under exploitation---exceeding human noise robustness while falling short of human sophistication in protecting against strategic abuse.
 
 \section{Related Work}\label{sec:related}
 
-\textbf{Game Theory and Noise.} The trembling-hand concept originated with Selten \citep{selten1975reexamination} as a refinement criterion for Nash equilibria, selecting strategies robust to infinitesimal errors. Quantal Response Equilibrium \citep{mckelvey1998quantal} extends this by modeling boundedly rational agents who make probabilistic errors proportional to payoff differences; recent extensions to mean-field games (MFG-QRE) provide tractable approximations for large populations. Entropy-regularized multi-agent reinforcement learning (MARL) has shown that adding uncertainty to agent policies can expand the basin of attraction for cooperative equilibria \citep{han2012alife}, effectively softening the brittleness of deterministic best-response dynamics. Schelling \citep{schelling1960strategy} studied how errors could paradoxically stabilize cooperation by breaking deterministic punishment cycles. In purely adversarial settings, zero-determinant strategies \citep{pressDyson2012,hilbe2013memory} demonstrate how memory-one players can enforce extortionate outcomes. Our work provides the first empirical evidence that LLMs exhibit noise-resilience phenomena at realistic error rates, with belief tracking serving as the key enabling mechanism for ``hallucinated forgiveness.'' Connecting our findings to entropy-regularized MARL: the +0.18 TRS in Llama-3.1-70B suggests that belief-based forgiveness functions analogously to entropy bonuses---softening retaliation triggers and enlarging the cooperative attractor basin under stochastic dynamics.
+\textbf{Game Theory and Noise.} The trembling-hand concept originated with Selten \citep{selten1975reexamination} as a refinement criterion for Nash equilibria, selecting strategies robust to infinitesimal errors. Quantal Response Equilibrium \citep{mckelvey1998quantal} extends this by modeling boundedly rational agents who make probabilistic errors proportional to payoff differences; recent extensions to mean-field games (MFG-QRE) provide tractable approximations for large populations. Entropy-regularized multi-agent reinforcement learning (MARL) has shown that adding uncertainty to agent policies can expand the basin of attraction for cooperative equilibria \citep{han2012alife}, effectively softening the brittleness of deterministic best-response dynamics. Schelling \citep{schelling1960strategy} studied how errors could paradoxically stabilize cooperation by breaking deterministic punishment cycles. In purely adversarial settings, zero-determinant strategies \citep{pressDyson2012,hilbe2013memory} demonstrate how memory-one players can enforce extortionate outcomes. Our work provides the first empirical evidence that LLMs exhibit noise-resilience phenomena at realistic error rates, with belief tracking serving as the key enabling mechanism for ``hallucinated forgiveness.'' Connecting our findings to entropy-regularized MARL: belief-based forgiveness functions analogously to entropy bonuses---softening retaliation triggers and enlarging the cooperative attractor basin under stochastic dynamics.
 
 \textbf{Cooperative AI.} Dafoe et al. \citep{dafoe2020open} outlined the grand challenges of building AI systems capable of cooperation, highlighting robustness to noise, commitment mechanisms, and multi-agent learning. Hammond et al. \citep{hammond2025multi} systematically analyze multi-agent risks from advanced AI. Recent efforts \citep{zhang2023exploring,mao2023alympics,mao2025alympics} explore LLM collaboration but focus on complementary task decomposition rather than strategic tension. Emerging work \citep{buscemi2025llms,buscemi2025fairgame,proverbio2025can} applies game theory to AI governance and cybersecurity scenarios, while \citet{huynh2025understanding,huynh2026stake} systematically examine how payoff structures and language shape LLM strategic behaviors. Our TRS metric operationalizes robustness in the Dafoe framework.
 
