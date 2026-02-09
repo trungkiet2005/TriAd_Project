@@ -195,3 +195,28 @@ def get_significance_symbol(p_value: float) -> str:
         return '*'
     else:
         return ''
+
+
+class ScoreCalculator:
+    """
+    Calculate total scores from DataFrame rows containing score data.
+    """
+    
+    @staticmethod
+    def calculate_total_score(row: pd.Series, score_cols: List[str]) -> float:
+        """
+        Calculate total score across all score columns in a row.
+        
+        Args:
+            row: DataFrame row
+            score_cols: List of column names containing scores
+            
+        Returns:
+            float: Total score summed across all columns
+        """
+        total = 0
+        for col in score_cols:
+            scores = row[col]
+            if isinstance(scores, list):
+                total += sum(scores)
+        return total
