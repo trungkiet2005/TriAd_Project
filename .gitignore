@@ -12,3 +12,16 @@ venv.bak
 resources/results/
 .vscode/
 .idea/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.blg
+*.out
+*.bbl
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz

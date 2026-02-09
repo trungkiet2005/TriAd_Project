@@ -1,0 +1,69 @@
+# CITATION.cff - Citation File Format for Project TRIAD
+# This file provides structured citation information for the repository
+
+cff-version: 1.2.0
+message: "If you use this software or findings, please cite our UAI 2026 paper."
+title: "Project TRIAD: The Trembling, Welfare, and Heroism Paradoxes in Multi-Agent LLM Systems"
+version: 1.0.0
+date-released: 2026-02-09
+url: "https://github.com/project-triad/triad"
+repository-code: "https://github.com/project-triad/triad"
+license: MIT
+type: software
+
+authors:
+  - family-names: "Anonymous"
+    given-names: "For Review"
+    # Full author information will be added upon acceptance
+
+preferred-citation:
+  type: conference-paper
+  title: "Project TRIAD: The Trembling, Welfare, and Heroism Paradoxes in Multi-Agent LLM Systems"
+  authors:
+    - family-names: "Anonymous"
+      given-names: "For Review"
+  conference:
+    name: "40th Conference on Uncertainty in Artificial Intelligence"
+    city: "Barcelona"
+    country: "ES"
+  year: 2026
+  publisher:
+    name: "AUAI Press"
+  abstract: "As Large Language Models (LLMs) populate increasingly complex social ecosystems, their ability to maintain robustness against noise and exploitation becomes critical. We present Project TRIAD, a unified game-theoretic framework evaluating LLM agents across three environments: Prisoner's Dilemma, Public Goods Game, and Volunteer's Dilemma. Through 15,000+ guided simulation rounds across six languages, we uncover three counter-intuitive phenomena: (1) The Trembling Paradox, where moderate execution noise increases systemic cooperation by disrupting retaliation cycles; (2) The Welfare Paradox, where agents exhibiting Toxic Kindness generate high group welfare but suffer extreme exploitation; and (3) The Heroism Paradox, where strategic waiting leads to bystander cascades and coordination failures."
+  keywords:
+    - Large Language Models
+    - Multi-Agent Systems
+    - Game Theory
+    - Cooperative AI
+    - Robustness
+    - Social Alignment
+
+references:
+  - type: article
+    title: "Open problems in cooperative AI"
+    authors:
+      - family-names: "Dafoe"
+        given-names: "Allan"
+    year: 2020
+    journal: "arXiv preprint arXiv:2012.08630"
+  
+  - type: book
+    title: "The strategy of conflict"
+    authors:
+      - family-names: "Schelling"
+        given-names: "Thomas C"
+    year: 1960
+    publisher:
+      name: "Harvard University Press"
+  
+  - type: article
+    title: "The evolution of cooperation"
+    authors:
+      - family-names: "Axelrod"
+        given-names: "Robert"
+      - family-names: "Hamilton"
+        given-names: "William D"
+    year: 1981
+    journal: "Science"
+    volume: 211
+    pages: "1390-1396"

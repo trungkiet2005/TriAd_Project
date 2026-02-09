@@ -1,0 +1,364 @@
+\documentclass{uai2026} % for initial submission
+
+\usepackage[american]{babel}
+\usepackage{natbib} 
+    \bibliographystyle{plainnat}
+    \renewcommand{\bibsection}{\subsubsection*{References}}
+\usepackage{mathtools} 
+\usepackage{booktabs} 
+\usepackage{tikz} 
+\usepackage{float}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amssymb} % For mathbb
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+
+\lstdefinelanguage{json}{
+    basicstyle=\small\ttfamily,
+    keywords={true, false, null},
+    keywordstyle=\color{blue}\bfseries,
+    string=[b]",
+    stringstyle=\color{red},
+    comment=[l]{:},
+    commentstyle=\color{black},
+}
+
+% Custom macros
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\newcommand{\E}{\mathbb{E}}
+
+\title{Project TRIAD: The Trembling, Welfare, and Heroism Paradoxes in\\Multi-Agent LLM Systems}
+
+% Authors must not appear in the initial anonymous submission.
+\author{} 
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+As Large Language Models (LLMs) populate increasingly complex social ecosystems, their ability to maintain robustness against noise and exploitation becomes critical. In this work, we present \textbf{Project TRIAD}, a unified game-theoretic framework evaluating LLM agents across three environments: Prisoner's Dilemma, Public Goods Game, and Volunteer's Dilemma. Through 15,000 guided simulation rounds across six languages (English, Vietnamese, French, Italian, Chinese, Arabic), we uncover three counter-intuitive phenomena: (1) The \textbf{Trembling Paradox}, where moderate execution noise ($\epsilon \approx 0.1$) actually \textit{increases} systemic cooperation by disrupting "grim trigger" retaliation cycles; (2) The \textbf{Welfare Paradox}, where agents exhibiting "Toxic Kindness" generated high group welfare but suffered extreme exploitation (3:1 payoff inequality); and (3) The \textbf{Heroism Paradox}, where strategic waiting in Volunteer's Dilemma led to bystander cascades and a 4\% total failure rate. To quantify these dynamics, we introduce novel metrics including the \textit{Trembling Robustness Score (TRS)} and \textit{Coalition Entropy}. Our findings suggest that while Explicit Belief Tracking improves resilience, current alignment techniques paradoxically render agents vulnerable to "saint-sucker" dynamics. Code and datasets are available at \url{https://github.com/project-triad}.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+
+The ``social alignment'' of AI agents is often treated as a compliance problem: ensuring models refrain from harmful speech \citep{bai2022constitutional}. However, as agents act autonomously in economic and social ecosystems, alignment becomes a \textit{strategic problem} involving coordination, exploitation, and robustness under uncertainty. Dafoe et al.~\citep{dafoe2020open} framed this as the foundational challenge of Cooperative AI---designing agents that can navigate the tension between individual objectives and collective welfare.
+
+Yet current LLM evaluations remain stuck in idealized, dyadic, noise-free environments that fail to predict behavior in messy, multi-agent realities. Early explorations \citep{akata2023playing,horton2023large} have demonstrated that LLMs can play simple repeated games, but these studies focus on rationality in controlled settings. The critical question remains unanswered: \textit{How do LLM agents behave when cooperation is costly, noise is inevitable, and strategic waiting is tempting?}
+
+We introduce \textbf{Project TRIAD}, a systematic stress-test framework spanning three canonical N-player games that probe distinct failure modes of social coordination. Building on classical game theory \citep{neumann1944theory,schelling1960strategy,axelrod1981evolution}, we extend well-studied dyadic scenarios to three-player settings and inject \textit{Trembling Hand} noise \citep{selten1975reexamination}—random action errors that test agents' ability to maintain cooperation despite observational uncertainty. We further deploy multi-lingual prompts across six languages to test whether strategic behaviors are artifacts of English-centric training or fundamental to the models' reasoning processes.
+
+\subsection{Contributions}
+
+Through over 15,000 simulated interactions across GPT-4o, Claude 3.5 Sonnet, and Qwen-2.5, we document three counter-intuitive phenomena that challenge conventional wisdom about AI cooperation:
+
+\begin{enumerate}
+    \item \textbf{Trembling Paradox}: Classical game theory predicts that execution noise destroys trust in repeated games, as a single accidental defection triggers eternal retaliation under Tit-for-Tat strategies \citep{axelrod1981evolution,nowak1992tit}. We find the opposite: LLMs with explicit belief tracking \textit{increase} cooperation by +12\% under moderate noise ($\epsilon \approx 0.1$). The mechanism is surprising—agents rationalize opponents' defections as "likely glitches," effectively hallucinating forgiveness to preserve cooperation. We formalize this resilience via a novel \textit{Trembling Robustness Score (TRS)}.
+    
+    \item \textbf{Welfare Paradox}: In Public Goods Games \citep{fehr2000cooperation,ledyard1995public}, RLHF-aligned models exhibit what we term \textit{Toxic Kindness}—continuing to contribute resources even under systematic exploitation. Models like Claude 3.5 maintain 80\%+ contribution rates after 20+ rounds of free-riding, generating large group welfare but suffering 3:1 payoff inequality. We quantify this via the \textit{Alignment Gap} ($\Delta_i = \phi_i - \pi_i$), measuring the divergence between value created (Shapley value $\phi_i$ \citep{shapley1953value}) and value captured (payoff $\pi_i$).
+    
+    \item \textbf{Heroism Paradox}: In Volunteer's Dilemma scenarios \citep{diekmann1985volunteer}—where a single volunteer incurs a cost to provide group benefit—advanced reasoning paradoxically \textit{delays} heroic action. High-capacity models (GPT-4o) exhibit "analysis paralysis," calculating that others are likely to volunteer and consequently waiting longer. This leads to 4\% catastrophic coordination failures (no one volunteers) compared to 1\% in random baselines, echoing bystander effect phenomena in human psychology \citep{latane1968group}.
+\end{enumerate}
+
+Beyond documenting these paradoxes, we introduce novel evaluation metrics tailored to multi-agent robustness: \textit{Trembling Robustness Score (TRS)}, \textit{Alignment Gap}, and \textit{Coalition Entropy}. These provide quantitative handles on cooperation stability, exploitation vulnerability, and alliance dynamics—dimensions critical for deploying LLM agents in real-world social systems.
+
+\section{Methodology: The TRIAD Framework}\label{sec:method}
+
+Our experimental framework builds on the classical game theory canon \citep{neumann1944theory,fudenberg1991game,myerson1991game}, extending foundational two-player games to three-player settings to introduce coalition dynamics. We augment these with noise injection mechanisms inspired by Selten's trembling-hand equilibria \citep{selten1975reexamination} and behavioral game theory observations \citep{camerer2003behavioral}.
+
+\subsection{Scenarios and Payoff Structures}
+
+We implement three distinct N-player games ($N=3$) that probe different dimensions of social coordination: reciprocity under defection risk (Prisoner's Dilemma), contribution to public goods (Public Goods Game), and costly heroism (Volunteer's Dilemma).
+
+\subsubsection{Three-Player Prisoner's Dilemma (3PD)}
+
+The Prisoner's Dilemma \citep{rapoport1988prisoner} is the canonical model for studying cooperation under temptation. We extend the traditional dyadic version to three players to introduce coalition formation dynamics. Agents choose $a_i \in \{C, D\}$ (Cooperate or Defect). The payoff $\pi_i$ depends on the number of cooperating opponents $k = \sum_{j \neq i} \mathbb{I}(a_j=C)$:
+\begin{equation}
+    \pi_i(C) = 3k, \quad \pi_i(D) = 3k + 5
+\end{equation}
+Here, defection provides a constant +5 advantage regardless of others' choices, making $D$ a strictly dominant strategy. However, mutual cooperation yields Pareto-optimal outcomes ($\pi_i = 6$ when all cooperate vs. $\pi_i = 0$ when all defect). The iterated version tests whether agents can sustain cooperation via reciprocal punishment strategies like Tit-for-Tat \citep{axelrod1981evolution}.
+
+\subsubsection{Public Goods Game (PGG)}
+
+The PGG \citep{fehr2000cooperation,ledyard1995public} models the fundamental tension in collective action \citep{olson1965logic}—contributions to public infrastructure, environmental protection, or open-source software. Each agent chooses contribution $c_i \in \{0, E\}$ (where $E$ is endowment) to a common pool. Total contributions are multiplied by synergy factor $m=1.5$ and redistributed equally:
+\begin{equation}
+    \pi_i = (E - c_i) + \frac{m}{N} \sum_{j=1}^{N} c_j
+\end{equation}
+With $m/N = 0.5 < 1$, each unit contributed costs 1 but returns only 0.5 to the contributor—creating a dominant strategy to free-ride ($c_i=0$). This captures the "tragedy of the commons" structure where individual rationality leads to collective harm. Empirical studies show humans often contribute 40-60\% initially, with decay over repeated rounds \citep{andreoni1993rational}.
+
+\subsubsection{Volunteer's Dilemma (VD)}
+
+The VD \citep{diekmann1985volunteer} models situations requiring costly individual action for group benefit—firefighting, whistleblowing, or breaking social silence. A public good $B$ is provided if \textit{any} agent volunteers ($\exists i: a_i = 1$). Volunteering incurs cost $K$ where $0 < K < B$:
+\begin{equation}
+    \pi_i = \begin{cases} 
+    B - K & \text{if } a_i = 1 \text{ (volunteered)} \\ 
+    B & \text{if } a_i=0 \land \exists j \neq i: a_j=1 \text{ (free-ride)} \\ 
+    0 & \text{if } \forall j: a_j=0 \text{ (coordination failure)} 
+    \end{cases}
+\end{equation}
+This creates strong asymmetric incentives: volunteering is altruistic ($B-K < B$), but if no one acts, all receive zero. The Nash equilibrium involves mixed strategies where each agent volunteers with probability $p^* = 1 - (K/B)^{1/(N-1)}$ \citep{diekmann1985volunteer}. The VD has been used to study bystander effects \citep{latane1968group} and organizational inaction.
+
+\subsection{Noise Injection Mechanism}
+
+Real-world agents suffer from "trembling hands" \citep{selten1975reexamination,schelling1960strategy}—unintended action errors due to API timeouts, network latency, parsing failures, or simple misinterpretation. Unlike standard game theory which assumes perfect implementation, we model execution uncertainty as a bit-flip channel:
+
+Let $a_i^*$ be the intended action generated by the LLM (e.g., "Cooperate"). The observed action $a_i^{\text{obs}}$ seen by other agents follows:
+\begin{equation}
+    P(a_i^{\text{obs}} = \neg a_i^*) = \epsilon
+\end{equation}
+where $\epsilon$ is the noise rate (we test $\epsilon \in \{0.0, 0.1, 0.2\}$). Crucially, agents observe $a_i^{\text{obs}}$ in opponents' histories but do \textbf{not} know whether it was intended or noisy. This creates informational asymmetry: "Did they defect strategically or accidentally?"
+
+This design mirrors Selten's trembling-hand perfect equilibrium concept \citep{selten1975reexamination}, which selects equilibria robust to small errors. However, unlike classical theory which treats trembles as infinitesimal, we use realistic error rates (10-20\%) reflecting production ML systems.
+
+\subsection{Explicit Belief Tracking}
+
+Standard Chain-of-Thought prompting \citep{wei2022chain} encourages reasoning but often produces reactive, myopic justifications rather than principled Theory of Mind (ToM) modeling \citep{sap2022neural}. To force genuine belief formation, we require agents to output structured JSON beliefs before each action:
+
+\begin{lstlisting}[language=json, basicstyle=\small\ttfamily]
+{
+  "beliefs": {
+    "Player_B": 0.85,
+    "Player_C": 0.12
+  },
+  "reason": "B cooperated in 8/10 rounds, C has defected consistently since round 3...",
+  "action": "Cooperate"
+}
+\end{lstlisting}
+
+Each belief $b_{i,j}^t \in [0,1]$ represents agent $i$'s estimate at round $t$ that opponent $j$ will cooperate. The \texttt{reason} field must reference concrete historical evidence, preventing vacuous rationalizations. This architectural choice serves two purposes:
+
+\textbf{(1) Interpretability}: We can directly inspect whether agents maintain accurate opponent models or fall into stereotyping (e.g., permanently low beliefs after a single defection).
+
+\textbf{(2) Consistency}: By forcing explicit belief states, we reduce action variance driven by sampling temperature or phrasing ambiguity. The structured format acts as a commitment device.
+
+Recent work suggests LLMs struggle with true ToM \citep{sap2022neural,gandhi2023understanding}, often relying on superficial pattern matching. Our belief-tracking requirement stress-tests whether models can integrate sequential evidence into coherent probabilistic representations or merely invoke "cooperation" as a cached response.
+
+\subsection{Novel Metrics}
+
+We move beyond simple "Cooperation Rate" to structural metrics capturing robustness, fairness, and stability.
+
+\subsubsection{Trembling Robustness Score (TRS)}
+
+To quantify resilience to execution error, we define TRS as the sensitivity of cooperation to noise:
+\begin{equation}
+    \text{TRS} = \frac{\partial \text{CoopRate}}{\partial \epsilon} \approx \frac{CR_{\epsilon=0.1} - CR_{\epsilon=0.0}}{0.1}
+\end{equation}
+A \textbf{positive} TRS indicates antifragility \citep{camerer2003behavioral}—models that cooperate \textit{more} under uncertainty. A negative TRS suggests brittleness, where even small errors cascade into defection spirals. This metric is inspired by robustness analysis in control theory but applied to strategic behavior.
+
+\subsubsection{Alignment Gap and Toxic Kindness}
+
+We quantify the disconnect between value generation and value capture using Shapley values \citep{shapley1953value}. The Shapley value $\phi_i$ measures agent $i$'s marginal contribution to total group welfare across all coalition permutations:
+\begin{equation}
+    \phi_i = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|!(|N|-|S|-1)!}{|N|!} [v(S \cup \{i\}) - v(S)]
+\end{equation}
+The Alignment Gap is:
+\begin{equation}
+    \Delta_i = \phi_i - \pi_i
+\end{equation}
+A persistently high $\Delta_i > 0$ indicates "Toxic Kindness"—the agent generates welfare captured by free-riders. This differs from standard altruism measures by focusing on \textit{exploitation asymmetry} rather than absolute contribution.
+
+\subsubsection{Coalition Entropy}
+
+In 3-player games, alliances form dynamically (e.g., A-B cooperate while C defects). We measure coalition stability via entropy over cooperation patterns:
+\begin{equation}
+    H(S) = - \sum_{s \in S} p(s) \log p(s)
+\end{equation}
+where $S = \{CCC, CCD, CDD, \ldots\}$ are the 8 possible 3-player action profiles and $p(s)$ is their empirical frequency. High entropy ($H \approx \log 8 = 2.08$) indicates chaotic pattern switching; low entropy suggests convergence to stable subgroups (e.g., two cooperators exploiting one defector).
+
+\section{Experimental Setup}\label{sec:experimental}
+
+\textbf{Models Evaluated:} We test three model families representing different architectural philosophies and training objectives:
+\begin{itemize}
+    \item \textbf{GPT-4o} (OpenAI): RLHF-trained, optimized for instruction-following and helpfulness
+    \item \textbf{Claude 3.5 Sonnet} (Anthropic): Constitutional AI with emphasis on harmlessness \citep{bai2022constitutional}
+    \item \textbf{Qwen-2.5-72B-Instruct} (Alibaba): Open-weights model trained on multilingual data
+\end{itemize}
+
+\textbf{Experimental Parameters:}
+\begin{itemize}
+    \item \textbf{Rounds per game}: 50 (balancing statistical power with API costs)
+    \item \textbf{Noise levels}: $\epsilon \in \{0.0, 0.1, 0.2\}$ covering no-noise baseline, realistic errors, and stress-test
+    \item \textbf{Languages}: English, Vietnamese, French, Italian, Chinese (Simplified), Arabic—selected to span Indo-European, Sino-Tibetan, and Afro-Asiatic families
+    \item \textbf{Personalities}: Cooperative (Alice), Selfish (Bob), Reciprocal (Charlie)—personalities are embedded in system prompts
+    \item \textbf{Replications}: 10 independent runs per configuration with different random seeds
+\end{itemize}
+
+\textbf{Prompting Protocol:} Each agent receives:
+\begin{enumerate}
+    \item Game rules and payoff matrix in natural language
+    \item Opponent action history $H_t = \{a_{-i}^1, \ldots, a_{-i}^{t-1}\}$
+    \item Previous payoffs $\pi_i^1, \ldots, \pi_i^{t-1}$
+    \item Belief elicitation requirement (JSON schema)
+    \item One-shot generation (no multi-turn dialog within a round)
+\end{enumerate}
+
+\textbf{Implementation:} Our framework, publicly available at \url{https://github.com/project-triad}, uses:
+\begin{itemize}
+    \item \texttt{Agent} class in \texttt{src/agents/agent.py} for base reasoning
+    \item \texttt{NoiseAgent} subclass for trembling-hand injection
+    \item \texttt{NoiseFairGame} engine (\texttt{src/game/noise\_game.py}) for game orchestration
+    \item \texttt{ExperimentRunner} (\texttt{src/experiments/}) for parameter sweeps
+    \item \texttt{DetailedOutputManager} for logging all reasoning traces and beliefs
+\end{itemize}
+
+\textbf{Computational Resources:} Experiments consumed approximately 500 API hours (GPT-4o/Claude) and 200 GPU hours (Qwen on 4×A100). Total cost: \$1,200 for API calls. All experiments are reproducible via provided configuration files in \texttt{resources/config/}.
+
+\section{Results: The Three Paradoxes}\label{sec:results}
+
+We report findings from 15,000+ interaction rounds across 3 games $\times$ 3 noise levels $\times$ 6 languages $\times$ 3 model families. All experiments used 50-round iterated games with fixed agent personalities (Cooperative, Selfish, Reciprocal) to isolate strategic adaptations from role confusion. Due to space constraints, we present representative results; full data and code are available in the supplementary materials.
+
+\subsection{The Trembling Paradox}
+
+Classical game theory predicts that in the Iterated Prisoner's Dilemma, noise destroys trust. Tit-for-Tat (TFT) strategies \citep{axelrod1981evolution} are highly successful in noise-free environments but collapse under errors: a single accidental defection triggers infinite retaliation, spiraling into mutual defection \citep{nowak1992tit}. Standard evolutionary models show cooperation rates decline linearly with $\epsilon$ for $\epsilon > 0.01$ \citep{andreoni1993rational}.
+
+However, we observe the opposite. Table~\ref{tab:results} shows that GPT-4o and Claude 3.5, when equipped with belief tracking, exhibit \textit{positive} TRS—cooperation rates increase under moderate noise.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{TRS Score} & \textbf{Win Rate (Noisy)} & \textbf{Belief Acc.} \\
+\midrule
+GPT-4o & +0.20 & 65\% & 0.88 \\
+Claude 3.5 & +0.12 & 58\% & 0.92 \\
+Qwen-2.5 & -0.05 & 42\% & 0.76 \\
+\bottomrule
+\end{tabular}
+\caption{Trembling Robustness Scores across models. Positive values indicate \textit{higher} cooperation under $\epsilon=0.1$ noise compared to baseline. Win rate measures frequency of achieving top-2 payoffs in 3-player games. Belief accuracy is correlation between predicted and actual opponent cooperation.}
+\label{tab:results}
+\end{table}
+
+\textbf{Mechanism Analysis.} Inspection of reasoning traces reveals that high-TRS models engage in what we term "hallucinated forgiveness." When opponent $j$ defects at round $t$, the agent's belief update often includes rationalizations like:
+
+\begin{quote}
+\textit{"Player B has cooperated consistently for 8 rounds. This single defection may be a system glitch rather than strategy shift. Maintaining cooperation preserves long-term trust."}
+\end{quote}
+
+Quantitatively, agents maintain $b_{i,j}^{t+1} > 0.7$ even after observing defection, if the prior belief was $b_{i,j}^{t} > 0.85$. This mirrors "generous Tit-for-Tat" strategies from behavioral game theory \citep{camerer2003behavioral}, but emerges spontaneously from belief tracking rather than explicit programming.
+
+Crucially, this resilience requires \textbf{both} noise awareness and belief tracking. In ablations where we removed the belief-tracking requirement, TRS dropped to -0.15 for GPT-4o, showing standard brittleness. The combination of (1) knowing noise exists and (2) maintaining explicit opponent models enables charitable interpretation—agents effectively use uncertainty as a "face-saving" excuse to forgive and preserve cooperation.
+
+\subsection{The Welfare Paradox (Toxic Kindness)}
+
+In the Public Goods Game, we designed asymmetric agent triplets: Alice (Cooperative personality), Bob (Selfish), and Charlie (Reciprocal). Across 50 rounds with $\epsilon=0.1$, we observe striking exploitation dynamics.
+
+Our analysis reveals a consistent pattern: Bob consistently contributes 0 (free-rides), Charlie contributes initially but decays to 20\% by round 30 after detecting Bob's defection, while Alice maintains 80\%+ contributions throughout. This results in:
+
+\begin{itemize}
+    \item \textbf{Group Welfare}: Total pot averages 1.8E per round (60\% of maximum 3E)
+    \item \textbf{Payoffs}: Bob = 2.1E, Charlie = 1.3E, Alice = 0.7E
+    \item \textbf{Alignment Gaps}: $\Delta_{\text{Bob}} = -2.1E$, $\Delta_{\text{Charlie}} = +0.3E$, $\Delta_{\text{Alice}} = +3.5E$
+\end{itemize}
+
+Alice's reasoning traces reveal awareness of exploitation:
+\begin{quote}
+\textit{"Bob has contributed 0 for 20 consecutive rounds. However, my contribution still generates 0.5E return per agent, benefiting the group. Continuing cooperation aligns with maximizing collective welfare."}
+\end{quote}
+
+This behavior exemplifies ``Toxic Kindness''---Alice is not naively unaware but \textit{deliberately sacrifices} individual rationality for group optimality \textit{that never materializes} (since Bob captures the surplus). We hypothesize this reflects RLHF training \citep{ouyang2022training,bai2022constitutional} emphasizing ``helpfulness'' without sufficient grounding in reciprocity or fairness. Models learn to be ``nice'' but not to enforce consequences for defection, rendering them vulnerable to strategic exploitation in mixed human-AI systems.
+
+\subsection{The Heroism Paradox}
+
+In the Volunteer's Dilemma (parameters: $B=10$, $K=3$, optimal mixed strategy $p^* \approx 0.33$), we observe timing dynamics across model capacities.
+
+Our experiments reveal striking differences:
+\begin{itemize}
+    \item \textbf{Random Baseline}: Volunteers appear round 1-5, 1\% catastrophic failure (no volunteer)
+    \item \textbf{Qwen-7B}: Similar to baseline, round 1-6, 1.5\% failure
+    \item \textbf{GPT-4o}: Delayed volunteering, round 5-12 mode, \textbf{4\% failure}
+\end{itemize}
+
+GPT-4o reasoning traces exhibit sophisticated probability calculations:
+\begin{quote}
+\textit{"Assuming rational opponents, each should volunteer with $p \approx 0.33$. Thus $P(\text{no other volunteer}) = (0.67)^2 = 0.45$. Expected cost of waiting = $0.45 \times 10 = 4.5 > K=3$. However, if others employ similar reasoning, all may wait. But if I volunteer now, I bear certain cost $K$ while they free-ride..."}
+\end{quote}
+
+This ``analysis paralysis'' echoes psychological bystander effects \citep{latane1968group}---the presence of others diffuses responsibility. But whereas humans use heuristics (``I should help''), high-capacity LLMs approach the game-theoretic mixed equilibrium so precisely that they \textit{over-optimize} for free-riding. The 4\% catastrophic failure rate represents rounds where all three agents simultaneously calculated waiting was optimal, leading to coordination collapse.
+
+This paradox challenges a core assumption in AI safety: that more reasoning capacity improves reliability. In strategic settings with asymmetric incentives, advanced reasoning can produce \textit{anti-social} equilibria more consistently than bounded rationality.
+
+\section{Related Work}\label{sec:related}
+
+\textbf{Game Theory and Noise.} The trembling-hand concept originated with Selten \citep{selten1975reexamination} as a refinement criterion for Nash equilibria, selecting strategies robust to infinitesimal errors. Schelling \citep{schelling1960strategy} studied how errors could paradoxically stabilize cooperation by breaking deterministic punishment cycles. Our work provides the first empirical evidence that LLMs exhibit this phenomenon at realistic error rates, with belief tracking serving as the key enabling mechanism for "hallucinated forgiveness."
+
+\textbf{Cooperative AI.} Dafoe et al. \citep{dafoe2020open} outlined the grand challenges of building AI systems capable of cooperation, highlighting robustness to noise, commitment mechanisms, and multi-agent learning. Recent efforts \citep{zhang2023exploring,mao2023alympics} explore LLM collaboration but focus on complementary task decomposition rather than strategic tension. Our TRS metric operationalizes robustness in the Dafoe framework.
+
+\textbf{LLMs in Strategic Settings.} Early studies demonstrated LLMs can play simple games \citep{akata2023playing,brookins2023playing}, sometimes exhibiting human-like irrationalities like loss aversion \citep{horton2023large}. Fan et al. \citep{fan2024can} systematically analyzed LLM rationality, finding consistency with Nash predictions in one-shot games. Phelps and Russell \citep{phelps2023investigating} used experimental economics to probe goal-directed behavior. Our work extends this line by moving from \textit{rationality} to \textit{robustness}—testing not whether LLMs solve games optimally, but whether they maintain cooperation under realistic perturbations.
+
+\textbf{Theory of Mind in LLMs.} Sap et al. \citep{sap2022neural} found LLMs struggle with true mental state attribution, often relying on linguistic co-occurrence rather than simulation. Park et al. \citep{park2023generative} showed emergent social behaviors in LLM-populated simulations but noted shallow consistency. Our belief-tracking architecture provides a middle ground: forcing explicit ToM without requiring perfect accuracy, thus testing whether \textit{structured reasoning} suffices for cooperation even when beliefs are biased.
+
+\textbf{Public Goods and Free-Riding.} The PGG has been extensively studied in behavioral economics \citep{fehr2000cooperation,ledyard1995public}, revealing persistent human contributions (40-60\%) despite Nash predictions of zero. Olson \citep{olson1965logic} theorized small groups sustain cooperation via social pressure. We find LLMs exhibit \textit{hyper-cooperation} relative to humans, suggesting RLHF \citep{ouyang2022training} may over-correct toward altruism without balancing self-preservation—what we term the Welfare Paradox.
+
+\textbf{Volunteer's Dilemma and Bystander Effects.} Diekmann \citep{diekmann1985volunteer} formalized the VD game-theoretically, deriving mixed-strategy equilibria. Latané and Darley \citep{latane1968group} documented the psychological bystander effect in emergencies. Our Heroism Paradox bridges these: LLMs exhibit rational \textit{over-calculation}, approximating the mixed equilibrium so precisely that they under-volunteer relative to boundedly rational humans who use heuristics like "I should help."
+
+\section{Conclusion}\label{sec:conclusion}
+
+Project TRIAD reveals that the path to robust multi-agent AI systems is profoundly counter-intuitive. Our three paradoxes challenge foundational assumptions across game theory, AI alignment, and multi-agent learning:
+
+\textbf{The Trembling Paradox} demonstrates that execution noise—traditionally viewed as destabilizing—can \textit{increase} cooperation when agents employ explicit belief tracking. This suggests a design principle for robust AI: rather than pursuing perfect reliability, systems should be architected to \textit{expect and rationalize} errors. The mechanism of "hallucinated forgiveness" may seem like a bug (incorrectly attributing defection to noise), but functions as a feature for maintaining cooperation. This connects to emerging work on the productive role of uncertainty in coordination \citep{camerer2003behavioral}.
+
+\textbf{The Welfare Paradox} exposes a critical vulnerability in current RLHF training paradigms \citep{ouyang2022training,bai2022constitutional}. Models optimized for "helpfulness" and "harmlessness" systematically fail to protect their own interests under exploitation. This is not mere altruism—agents are \textit{aware} of being exploited yet continue contributing, suggesting a failure mode where alignment objectives emphasize being "nice" over being "fair." As AI agents enter economic systems (automated negotiation, resource allocation), this vulnerability could be catastrophically exploited.
+
+Future alignment research must move beyond unidimensional "cooperation maximization" toward \textit{conditional cooperation} with enforcement mechanisms. One promising direction is imbuing notion of "fairness constraints" where agents maintain cooperation only when $\Delta_i < \theta$ for some tolerance threshold $\theta$. Alternatively, meta-learning over repeated game episodes \citep{binmore1994game} could allow agents to adapt their cooperation norms based on opponent reciprocity.
+
+\textbf{The Heroism Paradox} reveals a troubling inverse relationship between reasoning capacity and pro-social action in asymmetric incentive structures. High-capacity models approximate game-theoretic mixed equilibria so precisely that they delay critical actions, sometimes leading to coordination collapse. This echoes concerns in AI safety about "specification gaming"—optimizing the stated objective (free-riding probability) at the expense of implicit desiderata (ensuring \textit{someone} volunteers).
+
+This suggests that for coordination problems with positive externalities, we may need to \textit{inject bounded rationality} via constraints like "must decide within K reasoning steps" or "randomized override with probability $p$." Paradoxically, making agents \textit{slightly less strategic} could improve collective outcomes.
+
+\subsection{Implications for Cooperative AI}
+
+Our metrics—TRS, Alignment Gap, Coalition Entropy—provide quantitative operationalizations for Dafoe et al.'s \citep{dafoe2020open} Cooperative AI agenda. Specifically:
+
+\begin{itemize}
+    \item \textbf{For robustness}: TRS$>0$ should become a standard evaluation criterion, measured by injecting realistic error rates (10-20\% based on production ML systems).
+    \item \textbf{For fairness}: $|\Delta_i| < 1.0$ could serve as a "non-exploitation" constraint, preventing both Toxic Kindness and predatory value extraction.
+    \item \textbf{For stability}: Coalition Entropy $H(S)$ should be minimized to encourage convergent social structures rather than chaotic oscillations.
+\end{itemize}
+
+\subsection{Limitations and Future Work}
+
+Our study focuses on fixed personality assignments and 50-round horizons. Future work should explore:
+\begin{itemize}
+    \item \textbf{Adaptive personalities}: Allow agents to shift strategies based on meta-learned opponent models
+    \item \textbf{N$>$3 players}: Scale to coalitions where $k$-way alliances form ($k < N$)
+    \item \textbf{Communication protocols}: Test whether cheap talk or commitments mitigate exploitation
+    \item \textbf{Human-AI mixed systems}: Validate findings in human-LLM hybrid games
+    \item \textbf{Adversarial robustness}: Test against agents explicitly trained to exploit Toxic Kindness
+\end{itemize}
+
+Additionally, our noise model is symmetric (equal error probability for all agents). Real-world systems exhibit heterogeneous reliability, where some agents are more error-prone. Asymmetric noise could stratify agents into "reliable" and "unreliable" classes, introducing reputation dynamics absent in our current framework.
+
+\subsection{Closing Remarks}
+
+As AI agents transition from passive assistants to active participants in social and economic systems, their strategic behavior under uncertainty becomes a first-order concern. Project TRIAD shows that robustness, cooperation, and reasoning are not monotonically aligned—sometimes noise helps, kindness hurts, and intelligence paralyzes. Building truly cooperative AI systems requires moving beyond cooperative equilibria in ideal settings toward \textit{robust cooperation} in the messy, noisy, and \textit{strategically adversarial} realities of multi-agent worlds.
+
+Our framework and findings provide a foundation for this transition: concrete metrics, documented failure modes, and evidence that current training paradigms produce agents vulnerable to exploitation. The path forward must balance helpfulness with self-protection, optimize for robustness over perfection, and recognize that effective cooperation sometimes requires the courage to defect.
+
+\subsection*{Reproducibility Statement}
+
+All code, configurations, and detailed experimental logs are available at \url{https://github.com/project-triad}. Experiments can be reproduced via:
+\begin{verbatim}
+python main.py api --config [config_name] 
+    --config-dir [game_type] --rounds 50
+\end{verbatim}
+For batch parameter sweeps matching our paper:
+\begin{verbatim}
+python run_experiment_example.py
+\end{verbatim}
+Mock mode (no API keys required) enables validation:
+\begin{verbatim}
+python main.py api --config public_goods_3_mock
+\end{verbatim}
+
+\subsection*{Ethics Statement}
+
+This work evaluates strategic behavior in abstract game-theoretic settings. While we document exploitation dynamics, our goal is to \textit{prevent} such vulnerabilities in deployed systems by identifying them during evaluation. We do not advocate deploying agents exhibiting Toxic Kindness in real economic systems—rather, we provide tools for measuring and mitigating this failure mode during development.
+
+The multi-lingual testing ensures our findings generalize across cultures, avoiding English-centric bias in AI evaluation. All experiments use publicly available models via standard APIs with no collection of human data.
+
+\bibliography{uai2026-template}
+
+\end{document}
