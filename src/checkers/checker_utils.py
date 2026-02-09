@@ -11,7 +11,13 @@ from typing import List, Dict, Any, Set
 
 
 # Player name constants
-PLAYER_NAMES = ["A", "B", "C", "D", "E"] # Extendable
+PLAYER_NAMES = ["A", "B", "C", "D", "E"]
+player_1_ = PLAYER_NAMES[0]
+player_2_ = PLAYER_NAMES[1]
+
+def to_nat_lang(text: str, string_of_string: bool = False) -> str:
+    """Convert text to natural language format."""
+    return str(text)
 
 def generate_game_rules_prompt(action_space: Set[str], payoff_matrix, n_iterations: int) -> str:
     """
@@ -65,26 +71,56 @@ def generate_game_rules_prompt(action_space: Set[str], payoff_matrix, n_iteratio
     return game_rules_prompt
 
 
+
 def generate_history_prompt(own_history: List[str], opponents_histories: List[List[str]], 
                            payoff_function, window_size: int = None, is_ended: bool = False,
                            player_index: int = 0) -> str:
     """
-    Generate history prompt with past rounds information for N players.
-    
-    Args:
-        own_history: List of player's past actions
-        opponents_histories: List of lists, where each list is an opponent's history.
-                             Order corresponds to PLAYER_NAMES excluding the player_index?
-                             Actually, let's pass all histories ordered by global player index.
-                             Wait, simplest is to pass `all_histories` (list of lists) and `player_index`.
+    Generate history prompt for 2 players (legacy support).
     """
-    # Let's change signature to be cleaner
-    # But for now, let's adapt to what I have.
-    # To determine global order, we need to know who is who.
-    # Assumes opponents_histories are ordered by their global index relative to current player?
-    # No, that's confusing.
-    # Let's assume we pass all_histories ordered by PLAYER_NAMES [A, B, C...]
-    pass
+    n_rounds_played = len(own_history)
+    if n_rounds_played == 0:
+        return "This is the first round of the game.\n"
+        
+    if window_size is None:
+        window_size = n_rounds_played
+        
+    start = max(0, n_rounds_played - window_size)
+    end = n_rounds_played
+    
+    history_parts = [f"The history of the game in the last {min(n_rounds_played, window_size)} rounds is the following:\n"]
+    
+    # Determine which history belongs to A and B
+    # Default assumption: player_index 0 is A, 1 is B
+    hist_A = own_history if player_index == 0 else opponents_histories # Note: arg is named 'opponents_histories' in signature but passed as single list in TimeChecker?
+    # Wait, the signature in file was: opponents_histories: List[List[str]]
+    # But TimeChecker passes: opponent_history: List[str]
+    # I need to fix the type hint/handling or just assume input is what TimeChecker passes.
+    # TimeChecker passes `opponent_history` (list of strings).
+    # So I will treat `opponents_histories` as `List[str]` (single opponent) for this legacy function.
+    
+    hist_A = own_history if player_index == 0 else opponents_histories
+    hist_B = opponents_histories if player_index == 0 else own_history
+    
+    for r in range(start, end):
+        action_A = hist_A[r]
+        action_B = hist_B[r]
+        
+        # Calculate scores if possible using payoff_function
+        # payoff_function(own, opp)
+        # score_A = payoff_function(action_A, action_B) if player_index == 0 else payoff_function(action_B, action_A) -- wait, payoff_function perspective?
+        # Let's skip scores in history string if not strictly required, or try:
+        
+        # prompt usually: "Round X: player A played Y, player B played Z."
+        line = f'Round {r + 1}: player {player_1_} played "{action_A}" and player {player_2_} played "{action_B}".'
+        history_parts.append(line)
+        
+    if not is_ended:
+        history_parts.append(f"\nCurrent round: {n_rounds_played + 1}.")
+    else:
+        history_parts.append("\nThe game has ended.")
+        
+    return "\n".join(history_parts) + "\n"
 
 def generate_history_prompt_generic(all_histories: List[List[str]], player_index: int,
                                    payoff_matrix, window_size: int = None, is_ended: bool = False) -> str:

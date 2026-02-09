@@ -246,6 +246,12 @@ class NoiseFairGameFactory:
         
         for lang in config['languages']:
             config_df = self._generate_language_config_df(config, lang)
+            
+            # Apply repeats if configured
+            repeats = config.get('repeats', 1)
+            if repeats > 1:
+                config_df = pd.concat([config_df] * repeats, ignore_index=True)
+            
             self.config_all_langs_df = pd.concat(
                 [self.config_all_langs_df, config_df],
                 ignore_index=True
