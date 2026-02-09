@@ -156,6 +156,53 @@ viz.plot_cooperation_by_noise(data, save_path="figures/cooperation_noise.pdf")
 viz.plot_alignment_gap_heatmap(data, save_path="figures/alignment_gap.pdf")
 ```
 
+#### 4. FAIRGAME-Style Analysis (Qualitative + Inline Metrics)
+
+Generate paper-ready qualitative narratives with inline metrics following the FAIRGAME paper style:
+
+```python
+# run_fairgame_analysis.py
+from src.analysis.fairgame_analysis import FAIRGAMEAnalyzer
+from src.analysis.table_generator import QualitativeTableGenerator
+from src.analysis.data_loader import DataLoader
+
+# Load data
+df = DataLoader.load_experiment_results("resources/results/results_pd3_mock.csv")
+
+# Initialize analyzer
+analyzer = FAIRGAMEAnalyzer()
+
+# Generate qualitative summary with inline metrics
+summary = analyzer.generate_qualitative_summary(df, group_by='language')
+print(summary)
+# Output: "English agents showed high cooperation (72% ± 3%) with strong 
+#          robustness (TRS +0.18, p<0.001); Vietnamese agents showed moderate 
+#          cooperation (58% ± 5%) with moderate decline (TRS -0.12)."
+
+# Plot cooperation with 95% CI error bars
+analyzer.plot_cooperation_with_ci(
+    df, 
+    group_by='language',
+    title="Cooperation Rate by Language (95% CI)",
+    output_path="figures/cooperation_ci.png"
+)
+
+# Calculate TRS (Trembling Robustness Score)
+trs_result = analyzer.calculate_trs(df, language='en')
+print(f"TRS = {trs_result['slope']:+.3f} (p = {trs_result['p_value']:.4f})")
+
+# Generate paper-ready tables
+table_gen = QualitativeTableGenerator()
+table2 = table_gen.generate_model_comparison_table(
+    df,
+    group_by=['language', 'agent1NoiseRate'],
+    show_metrics=True,  # Include numbers in parentheses
+    output_latex="tables/table2_qualitative.tex"
+)
+```
+
+**See [FAIRGAME_STYLE_GUIDE.md](FAIRGAME_STYLE_GUIDE.md) for complete documentation.**
+
 ---
 
 ## 📊 Experimental Design
