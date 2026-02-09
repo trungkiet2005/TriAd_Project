@@ -115,7 +115,7 @@ This design mirrors Selten's trembling-hand perfect equilibrium concept \citep{s
 
 Standard Chain-of-Thought prompting \citep{wei2022chain} encourages reasoning but often produces reactive, myopic justifications rather than principled Theory of Mind (ToM) modeling \citep{sap2022neural}. To force genuine belief formation, we require agents to output structured JSON beliefs before each action:
 
-\begin{lstlisting}[language=json, basicstyle=\small\ttfamily]
+\begin{lstlisting}[language=json, basicstyle=\small\ttfamily, breaklines=true]
 {
   "beliefs": {
     "Player_B": 0.85,
@@ -190,6 +190,7 @@ However, we observe the opposite. Table~\ref{tab:results} shows that GPT-4o and 
 
 \begin{table}[h]
 \centering
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
 \toprule
 \textbf{Model} & \textbf{TRS Score} & \textbf{Win Rate (Noisy)} & \textbf{Belief Acc.} \\
@@ -198,7 +199,8 @@ GPT-4o & +0.20 & 65\% & 0.88 \\
 Claude 3.5 & +0.12 & 58\% & 0.92 \\
 Qwen-2.5 & -0.05 & 42\% & 0.76 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{Trembling Robustness Scores across models. Positive values indicate \textit{higher} cooperation under $\epsilon=0.1$ noise compared to baseline. Win rate measures frequency of achieving top-2 payoffs in 3-player games. Belief accuracy is correlation between predicted and actual opponent cooperation.}
 \label{tab:results}
 \end{table}
@@ -287,18 +289,18 @@ Our framework and findings provide a foundation for this transition: concrete me
 \subsection*{Reproducibility Statement}
 
 All code, configurations, and detailed experimental logs are available at \url{https://github.com/project-triad}. Experiments can be reproduced via:
-\begin{verbatim}
+\begin{lstlisting}[basicstyle=\small\ttfamily,breaklines=true]
 python main.py api --config [config_name] 
     --config-dir [game_type] --rounds 50
-\end{verbatim}
+\end{lstlisting}
 For batch parameter sweeps matching our paper:
-\begin{verbatim}
+\begin{lstlisting}[basicstyle=\small\ttfamily,breaklines=true]
 python run_experiment_example.py
-\end{verbatim}
+\end{lstlisting}
 Mock mode (no API keys required) enables validation:
-\begin{verbatim}
+\begin{lstlisting}[basicstyle=\small\ttfamily,breaklines=true]
 python main.py api --config public_goods_3_mock
-\end{verbatim}
+\end{lstlisting}
 
 \subsection*{Ethics Statement}
 
