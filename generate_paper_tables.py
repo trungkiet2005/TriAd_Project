@@ -3,31 +3,26 @@ Generate Paper-Ready Tables and Narratives (FAIRGAME-Style)
 Converts raw data into qualitative descriptions with inline metrics
 """
 
-import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent))
-
+from src.utils.utils import setup_project_path, get_results_dir, load_csv_with_fallback
 from src.analysis.data_loader import DataLoader
 from src.analysis.table_generator import QualitativeTableGenerator
-import pandas as pd
 
 
 def main():
-    """
-    Generate paper-ready qualitative tables and narratives.
-    """
+    """Generate paper-ready qualitative tables and narratives."""
+    # Setup paths
+    setup_project_path()
     
     # Initialize generator
     table_gen = QualitativeTableGenerator()
     
     # Load experiment data
-    results_dir = Path("resources/results")
+    results_dir = get_results_dir()
     csv_file = results_dir / "results_pd3_mock.csv"
     
-    if not csv_file.exists():
-        print(f"File not found: {csv_file}")
-        print("Please run experiments first to generate results.")
+    if not load_csv_with_fallback(csv_file):
         return
     
     print(f"Loading data from {csv_file}...")
@@ -103,28 +98,16 @@ def main():
     )
     
     print(table2_pure[['language', 'agent1NoiseRate', 'description']].to_string(index=False))
-    print()
     
     # ===== SUMMARY =====
-    print("=" * 80)
+    print("\n" + "=" * 80)
     print("PAPER-READY OUTPUTS GENERATED")
     print("=" * 80)
-    print()
-    print("Generated files:")
-    print("  1. experiment_results/table2_qualitative.tex - LaTeX table for paper")
-    print("  2. experiment_results/language_narrative.txt - Cross-lingual narrative")
-    print("  3. experiment_results/condition_narrative.txt - Condition comparison")
-    print()
-    print("Usage in paper:")
-    print("  - Copy narratives directly into Results section")
-    print("  - Use LaTeX table for Table 2 (qualitative comparison)")
-    print("  - Combine with FAIRGAME-style plots (run_fairgame_analysis.py)")
-    print()
-    print("FAIRGAME-Style Features:")
-    print("  ✓ Qualitative descriptions with inline metrics")
-    print("  ✓ Statistical significance reporting")
-    print("  ✓ Narrative paragraphs for main text")
-    print("  ✓ LaTeX tables ready to insert")
+    print("\nGenerated files:")
+    print("  • experiment_results/table2_qualitative.tex - LaTeX table")
+    print("  • experiment_results/language_narrative.txt - Cross-lingual narrative")
+    print("  • experiment_results/condition_narrative.txt - Condition comparison")
+    print("\nUsage: Copy narratives directly into Results section")
 
 
 if __name__ == "__main__":
