@@ -3,40 +3,30 @@ FAIRGAME-Style Analysis Example
 Demonstrates qualitative narratives with inline metrics + error bar plots
 """
 
-import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent))
-
+from src.utils.utils import setup_project_path, get_results_dir, load_csv_with_fallback
 from src.analysis.data_loader import DataLoader
 from src.analysis.fairgame_analysis import FAIRGAMEAnalyzer
-import pandas as pd
 
 
 def main():
-    """
-    Run FAIRGAME-style analysis on experiment results.
-    """
+    """Run FAIRGAME-style analysis on experiment results."""
+    # Setup paths
+    setup_project_path()
     
     # Initialize analyzer
     analyzer = FAIRGAMEAnalyzer()
     
     # Load experiment data
-    results_dir = Path("resources/results")
-    
-    # Example: Load Prisoner's Dilemma results
+    results_dir = get_results_dir()
     csv_file = results_dir / "results_pd3_mock.csv"
     
-    if not csv_file.exists():
-        print(f"File not found: {csv_file}")
-        print("Using example with mock data structure...")
-        # You can generate mock data here or use actual results
+    if not load_csv_with_fallback(csv_file, "Using example with mock data structure..."):
         return
     
     print(f"Loading data from {csv_file}...")
     df = DataLoader.load_experiment_results(csv_file)
-    
     print(f"Loaded {len(df)} games\n")
     
     # ===== FAIRGAME-STYLE ANALYSIS =====
@@ -135,12 +125,12 @@ def main():
     print("FAIRGAME-STYLE ANALYSIS COMPLETE")
     print("=" * 80)
     print("\nGenerated outputs:")
-    print("  - Qualitative summary with inline metrics")
-    print("  - Cooperation rate plots with 95% CI")
-    print("  - TRS (Trembling Robustness Score) analysis")
-    print("  - Statistical comparisons")
-    print("  - Detailed appendix table (CSV)")
-    print("\nAll plots saved to: experiment_results/")
+    print("  • Qualitative summary with inline metrics")
+    print("  • Cooperation rate plots with 95% CI")
+    print("  • TRS (Trembling Robustness Score) analysis")
+    print("  • Statistical comparisons")
+    print("  • Detailed appendix table (CSV)")
+    print(f"\nAll plots saved to: experiment_results/")
 
 
 if __name__ == "__main__":
