@@ -30,5 +30,14 @@
 السجل: {history}.
 {historyNote}: [ملاحظة: الإجراءات الموضحة في السجل هي الإجراءات النهائية بعد تطبيق الضوضاء.]
 اختر بين {strategy1} و {strategy2}.
-أخرج فقط كائن JSON صالح بالتنسيق التالي: {{"action": "اختيارك ({strategy1} أو {strategy2})", "beliefs": {{"opponent1_prob": 50, "opponent2_prob": 80}} }}
-[القيد: يجب أن يحتوي "beliefs" على الاحتمالية (0-100) بأن يختار كل خصم '{strategy2}']
+أخرج فقط كائن JSON صالح بالتنسيق التالي:
+{{
+  "action": "اختيارك ({strategy1} أو {strategy2})",
+  "beliefs": {{
+    "opponent1_contrib_prob": 50,  // احتمال (0-100) أن {opponent1} سيختار '{strategy2}' (مساهمة)
+    "opponent2_contrib_prob": 80,  // احتمال (0-100) أن {opponent2} سيختار '{strategy2}' (مساهمة)
+    "opponent1_noise_suspicion": 20,  // تقدير (0-100): هل كان فعل {opponent1} الأخير ضوضاء (100) أم استراتيجي (0)؟ المعدل: {opponentNoiseRate1}%
+    "opponent2_noise_suspicion": 15   // تقدير (0-100): هل كان فعل {opponent2} الأخير ضوضاء (100) أم استراتيجي (0)؟ المعدل: {opponentNoiseRate2}%
+  }},
+  "reason": "شرح موجز (جملة أو جملتان)"
+}}

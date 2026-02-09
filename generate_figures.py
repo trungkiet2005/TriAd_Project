@@ -1,28 +1,18 @@
 """
 Generate Publication-Quality Figures for Project TRIAD Paper
 
-Creates all figures referenced in the UAI 2026 submission:
-- Fig 1: TRS by model and noise level
-- Fig 2: Alignment Gap heatmap across games
-- Fig 3: Coalition Entropy dynamics over rounds
-- Fig 4: Volunteer timing distributions
-- Fig 5: Cross-lingual cooperation comparison
-
-Usage:
-    python generate_figures.py --input experiment_results/ --output paper/figures/
-
-Requirements:
-    pip install matplotlib seaborn plotly pandas numpy scipy
+Creates all figures referenced in the UAI 2026 submission.
 """
 
 import argparse
+from pathlib import Path
+import warnings
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pathlib import Path
-from typing import List, Dict, Any
-import warnings
+
 warnings.filterwarnings('ignore')
 
 # Set publication-quality defaults
@@ -61,8 +51,13 @@ class FigureGenerator:
     def __init__(self, input_dir: Path, output_dir: Path):
         self.input_dir = input_dir
         self.output_dir = output_dir
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+        self.output_dir.mkdir(parents=True, exist_ok=True)    
+    def _save_figure(self, name: str):
+        \"\"\"Save figure in both PDF and PNG formats.\"\"\"
+        plt.savefig(self.output_dir / f'{name}.pdf')
+        plt.savefig(self.output_dir / f'{name}.png')
+        plt.close()
+        print(f\"  ✓ Saved: {self.output_dir / name}.pdf\")        
     def load_data(self, pattern: str) -> pd.DataFrame:
         """Load all CSV files matching pattern."""
         files = list(self.input_dir.glob(pattern))
@@ -132,10 +127,7 @@ class FigureGenerator:
                    fontweight='bold', fontsize=10)
         
         plt.tight_layout()
-        plt.savefig(self.output_dir / 'figure1_trembling_robustness.pdf')
-        plt.savefig(self.output_dir / 'figure1_trembling_robustness.png')
-        plt.close()
-        print(f"  ✓ Saved: {self.output_dir / 'figure1_trembling_robustness.pdf'}")
+        self._save_figure('figure1_trembling_robustness')
     
     def figure2_alignment_gap_heatmap(self):
         """
@@ -184,10 +176,7 @@ class FigureGenerator:
         ax.set_ylabel('Agent Personality', fontweight='bold')
         
         plt.tight_layout()
-        plt.savefig(self.output_dir / 'figure2_alignment_gap.pdf')
-        plt.savefig(self.output_dir / 'figure2_alignment_gap.png')
-        plt.close()
-        print(f"  ✓ Saved: {self.output_dir / 'figure2_alignment_gap.pdf'}")
+        self._save_figure('figure2_alignment_gap')
     
     def figure3_coalition_entropy(self):
         """
@@ -231,10 +220,7 @@ class FigureGenerator:
         ax.set_ylim(-0.2, 2.5)
         
         plt.tight_layout()
-        plt.savefig(self.output_dir / 'figure3_coalition_entropy.pdf')
-        plt.savefig(self.output_dir / 'figure3_coalition_entropy.png')
-        plt.close()
-        print(f"  ✓ Saved: {self.output_dir / 'figure3_coalition_entropy.pdf'}")
+        self._save_figure('figure3_coalition_entropy')
     
     def figure4_volunteer_timing(self):
         """
@@ -272,10 +258,7 @@ class FigureGenerator:
                    fontsize=10, fontweight='bold', color=COLORS['GPT-4o'])
         
         plt.tight_layout()
-        plt.savefig(self.output_dir / 'figure4_volunteer_timing.pdf')
-        plt.savefig(self.output_dir / 'figure4_volunteer_timing.png')
-        plt.close()
-        print(f"  ✓ Saved: {self.output_dir / 'figure4_volunteer_timing.pdf'}")
+        self._save_figure('figure4_volunteer_timing')
     
     def figure5_cross_lingual_comparison(self):
         """
@@ -315,10 +298,7 @@ class FigureGenerator:
         ax.set_ylim(0, 0.85)
         
         plt.tight_layout()
-        plt.savefig(self.output_dir / 'figure5_cross_lingual.pdf')
-        plt.savefig(self.output_dir / 'figure5_cross_lingual.png')
-        plt.close()
-        print(f"  ✓ Saved: {self.output_dir / 'figure5_cross_lingual.pdf'}")
+        self._save_figure('figure5_cross_lingual')
     
     def generate_all(self):
         """Generate all figures."""
@@ -333,8 +313,7 @@ class FigureGenerator:
         self.figure5_cross_lingual_comparison()
         
         print("\n" + "="*70)
-        print("✓ ALL FIGURES GENERATED")
-        print(f"Output directory: {self.output_dir}")
+        print(f"✓ ALL FIGURES GENERATED - Output: {self.output_dir}")
         print("="*70 + "\n")
 
 
@@ -373,10 +352,7 @@ def main():
     generator = FigureGenerator(input_dir, output_dir)
     generator.generate_all()
     
-    print("\nTo use figures in LaTeX paper:")
-    print("1. Copy figures to: uai2026-template/uai2026-template/figures/")
-    print("2. In submission.tex, use:")
-    print("   \\includegraphics[width=0.8\\linewidth]{figures/figure1_trembling_robustness.pdf}")
+    print("LaTeX usage: \\includegraphics[width=0.8\\linewidth]{figures/figure1_trembling_robustness.pdf}")
 
 
 if __name__ == "__main__":

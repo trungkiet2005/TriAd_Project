@@ -82,3 +82,17 @@ def load_csv_with_fallback(csv_path: Path, fallback_message: Optional[str] = Non
         print("Please run experiments first to generate results.")
     
     return None
+
+
+def print_section(title: str, width: int = 80, char: str = "="):
+    """
+    Print a formatted section header.
+    
+    Args:
+        title: Section title
+        width: Width of the separator line
+        char: Character to use for separator
+    """
+    print(f"\n{char * width}")
+    print(title)
+    print(f"{char * width}\n")

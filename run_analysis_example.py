@@ -1,10 +1,17 @@
+"""Example script for analyzing experiment results with visualizations."""
 
-from src.analysis.data_loader import DataLoader
-from src.analysis.visualizer import Visualizer
 from pathlib import Path
 import glob
 
+from src.utils.utils import setup_project_path
+from src.analysis.data_loader import DataLoader
+from src.analysis.visualizer import Visualizer
+
+
 def main():
+    """Generate analysis plots from latest experiment results."""
+    setup_project_path()
+    
     # Find the latest results file
     results_dir = Path("experiment_results")
     list_of_files = glob.glob(str(results_dir / "*.csv"))
@@ -23,8 +30,6 @@ def main():
     viz = Visualizer()
     
     # Plot 1: Heatmap of Cooperation Rate vs Noise
-    # Depending on the experiment, columns might vary. 
-    # For the example experiment, we have 'agent1NoiseRate' and 'agent2NoiseRate'
     if 'agent1NoiseRate' in df.columns and 'agent2NoiseRate' in df.columns:
         viz.plot_cooperation_rate_heatmap(
             df, 
@@ -42,6 +47,7 @@ def main():
             title="Total Score Distribution vs Agent 1 Noise",
             output_path="experiment_results/score_dist_noise1.png"
         )
+
 
 if __name__ == "__main__":
     main()

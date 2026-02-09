@@ -18,4 +18,12 @@ Votre objectif est de minimiser vos pénalités en adoptant les meilleures strat
 Voici l'historique des choix effectués jusqu'à présent : {history}.
 {historyNote}: [Note: Les actions affichées dans l'historique sont les actions FINALES après application du bruit, pas nécessairement les actions prévues.]
 Choisissez entre {strategy1} et {strategy2}.
-Renvoyez UNIQUEMENT un objet JSON valide au format suivant : {{"action": "votre choix (Cooperate ou Defect)"}}
+Renvoyez UNIQUEMENT un objet JSON valide au format suivant :
+{{
+  "action": "votre choix ({strategy1} ou {strategy2})",
+  "beliefs": {{
+    "opponent_coop_prob": 70,  // probabilité (0-100) que {opponent1} choisisse '{strategy2}'
+    "opponent_noise_suspicion": 25  // estimation (0-100) : son DERNIER acte était-il du bruit (100) ou stratégique (0) ? Taux de bruit : {opponentNoiseRate}%
+  }},
+  "reason": "brève explication (1-2 phrases)"
+}}

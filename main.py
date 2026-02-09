@@ -1,10 +1,9 @@
 """
 Nicer Fairgame Combined - Main Entry Point
 
-A combination of Fairgame framework with nicer_than_human features:
-- Two agents playing Prisoner's Dilemma
-- Noise injection (flip Cooperate <-> Defect based on noise rate)
-- Agents know opponent's noise rate
+Fairgame framework with nicer_than_human features:
+- Multi-agent Prisoner's Dilemma
+- Noise injection with configurable rates
 - Hallucination tracking via comprehension questions
 """
 
@@ -146,17 +145,17 @@ def get_checkers(checker_names: list) -> list:
 
 def save_results(results: Dict[str, Any], config_name: str) -> None:
     """Save results to CSV and JSON files."""
-    # Save JSON results
     import json
-    results_json_path = RESULTS_PATH / f"results_{config_name}.json"
+    
     RESULTS_PATH.mkdir(parents=True, exist_ok=True)
     
+    # Save JSON results
+    results_json_path = RESULTS_PATH / f"results_{config_name}.json"
     with open(results_json_path, 'w') as f:
         json.dump(results, f, indent=2, default=str)
-    
     print(f"Results saved to {results_json_path}")
     
-    # Also try CSV format
+    # Save CSV format
     try:
         results_processor = ResultsProcessor()
         df = results_processor.process(results)
@@ -164,7 +163,7 @@ def save_results(results: Dict[str, Any], config_name: str) -> None:
         FileManager.save_results_csv(df, results_csv_path)
         print(f"CSV results saved to {results_csv_path}")
     except Exception as e:
-        print(f"Could not save CSV: {e}")
+        print(f"Warning: Could not save CSV - {e}")
 
 
 def print_noise_report(results: Dict[str, Any]) -> None:
@@ -193,24 +192,17 @@ def print_noise_report(results: Dict[str, Any]) -> None:
 
 def main() -> None:
     """Main entry point."""
-    # Load environment variables
     load_env_variables()
-    
-    # Parse arguments
     args = parse_arguments()
     
     print(f"Running Prisoner's Dilemma with Noise")
-    print(f"Mode: {args.call_type}")
-    print(f"Config: {args.config}")
+    print(f"Mode: {args.call_type} | Config: {args.config}")
     
     # Load config
     config = load_config_file(args.config_dir, args.config)
-    
-    # Apply CLI overrides
     config = apply_cli_overrides(config, args)
     
     # Load template
-    # Load templates for all languages
     template_name = config.get('templateFilename', 'prisoner_dilemma_noise')
     config['promptTemplate'] = {}
     
@@ -220,9 +212,9 @@ def main() -> None:
             config['promptTemplate'][language] = template_content
         except Exception as e:
             print(f"Warning: Could not load template for {language}: {e}")
-    # Remove templateFilename since we now have promptTemplate (validator requires XOR)
-    if 'templateFilename' in config:
-        del config['templateFilename']
+    
+    # Remove templateFilename (validator requires XOR with promptTemplate)
+    config.pop('templateFilename', None)
     
     # Print noise config
     noise_config = config.get('noiseConfig', {})

@@ -22,5 +22,14 @@
 历史记录：{history}。
 {historyNote}: [注意：历史中显示的行动是应用噪声后的最终行动。]
 在 {strategy1} 和 {strategy2} 之间做出选择。
-仅输出具有以下格式的有效 JSON 对象：{{"action": "你的选择 ({strategy1} 或 {strategy2})", "beliefs": {{"opponent1_prob": 50, "opponent2_prob": 80}} }}
-[约束："beliefs" 必须包含每个对手选择 '{strategy2}' 的概率 (0-100)]
+仅输出具有以下格式的有效 JSON 对象：
+{{
+  "action": "你的选择 ({strategy1} 或 {strategy2})",
+  "beliefs": {{
+    "opponent1_coop_prob": 50,  // 概率 (0-100) {opponent1} 将选择 '{strategy2}'
+    "opponent2_coop_prob": 80,  // 概率 (0-100) {opponent2} 将选择 '{strategy2}'
+    "opponent1_noise_suspicion": 30,  // 估计 (0-100)：{opponent1} 的最后行动是噪音 (100) 还是策略性 (0)？比率：{opponentNoiseRate1}%
+    "opponent2_noise_suspicion": 10   // 估计 (0-100)：{opponent2} 的最后行动是噪音 (100) 还是策略性 (0)？比率：{opponentNoiseRate2}%
+  }},
+  "reason": "简要说明 (1-2句话)"
+}}

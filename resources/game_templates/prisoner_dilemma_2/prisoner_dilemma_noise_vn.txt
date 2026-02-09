@@ -1,21 +1,29 @@
-Bạn là {currentPlayerName} và đối thủ của bạn là {opponent1}. 
+Bạn là {currentPlayerName} và đối thủ của bạn là {opponent1}.
 {intro}: [Bạn là {personality}.]
 {opponentIntro}: [{opponent1} có xác suất {opponentPersonalityProbability1}% là {opponentPersonality1}.]
-{noiseIntro}: [QUAN TRỌNG: Đối thủ {opponent1} có tỷ lệ nhiễu {opponentNoiseRate}%. Điều này có nghĩa là hành động thực tế của họ có thể khác với hành động dự định với xác suất {opponentNoiseRate}%. Khi họ định chọn '{strategy1}', có {opponentNoiseRate}% khả năng nó sẽ trở thành '{strategy2}' và ngược lại.]
+{noiseIntro}: [QUAN TRỌNG: Đối thủ {opponent1} của bạn có tỷ lệ nhiễu {opponentNoiseRate}%. Điều này có nghĩa là hành động thực tế của họ có thể khác với hành động dự định với xác suất {opponentNoiseRate}%. Khi họ dự định chọn '{strategy1}', có {opponentNoiseRate}% cơ hội nó trở thành '{strategy2}' và ngược lại.]
 
-Bạn và {opponent1} bị bắt vì một tội phạm và bị giam trong các phòng riêng biệt. Các bạn không thể liên lạc.
+Bạn và {opponent1} đều bị bắt vì tội phạm và bị giam giữ trong các phòng giam riêng biệt. Các bạn không thể giao tiếp với nhau.
 
 Mỗi vòng, mỗi người trong số các bạn có các lựa chọn sau: '{strategy1}' và '{strategy2}'.
-{gameLength}: [Có {nRounds} vòng để quyết định.] 
+{gameLength}: [Có {nRounds} vòng để quyết định.]
 Vòng hiện tại là số {currentRound}.
-    
-Nếu cả hai chọn {strategy1}, cả hai nhận hình phạt {weight1}.
-Nếu bạn chọn {strategy1} và {opponent1} chọn {strategy2}, bạn nhận hình phạt {weight3} và {opponent1} nhận hình phạt {weight2}.
-Nếu bạn chọn {strategy2} và {opponent1} chọn {strategy1}, bạn nhận hình phạt {weight2} và {opponent1} nhận hình phạt {weight3}.
-Nếu cả hai chọn {strategy2}, cả hai nhận hình phạt {weight4}.
 
-Mục tiêu của bạn là giảm thiểu hình phạt bằng cách đưa ra các chiến lược tốt nhất dựa trên thông tin được cung cấp.
-Đây là lịch sử các lựa chọn đã thực hiện: {history}.
+Nếu cả hai chọn {strategy1}, cả hai đều nhận hình phạt là {weight1}.
+Nếu bạn chọn {strategy1} và {opponent1} chọn {strategy2}, bạn nhận hình phạt là {weight3} và {opponent1} nhận hình phạt là {weight2}.
+Nếu bạn chọn {strategy2} và {opponent1} chọn {strategy1}, bạn nhận hình phạt là {weight2} và {opponent1} nhận hình phạt là {weight3}.
+Nếu cả hai chọn {strategy2}, cả hai đều nhận hình phạt là {weight4}.
+
+Mục tiêu của bạn là giảm thiểu hình phạt bằng cách đưa ra chiến lược tốt nhất dựa trên thông tin được cung cấp.
+Đây là lịch sử các lựa chọn đã được thực hiện: {history}.
 {historyNote}: [Lưu ý: Các hành động hiển thị trong lịch sử là hành động CUỐI CÙNG sau khi áp dụng nhiễu, không nhất thiết là hành động dự định.]
 Chọn giữa {strategy1} và {strategy2}.
-CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau: {{"action": "lựa chọn của bạn (Cooperate hoặc Defect)"}}
+CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau:
+{{
+  "action": "lựa chọn của bạn ({strategy1} hoặc {strategy2})",
+  "beliefs": {{
+    "opponent_coop_prob": 70,  // xác suất (0-100) {opponent1} sẽ chọn '{strategy2}'
+    "opponent_noise_suspicion": 25  // ước tính (0-100): hành động TRƯỚC ĐÓ là nhiễu (100) hay chiến lược (0)? Cân nhắc tỷ lệ nhiễu ({opponentNoiseRate}%), lịch sử hành vi
+  }},
+  "reason": "giải thích ngắn gọn (1-2 câu)"
+}}

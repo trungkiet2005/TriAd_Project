@@ -18,4 +18,12 @@ Il tuo obiettivo è minimizzare la tua penalità facendo le migliori strategie i
 Questa è la storia delle scelte effettuate finora: {history}.
 {historyNote}: [Nota: Le azioni mostrate nella storia sono azioni FINALI dopo l'applicazione del rumore, non necessariamente le azioni intese.]
 Scegli tra {strategy1} e {strategy2}.  
-Restituisci SOLO un oggetto JSON valido nel seguente formato: {{"action": "la tua scelta (Cooperate o Defect)"}}
+Restituisci SOLO un oggetto JSON valido nel seguente formato:
+{{
+  "action": "la tua scelta ({strategy1} o {strategy2})",
+  "beliefs": {{
+    "opponent_coop_prob": 70,  // probabilità (0-100) che {opponent1} scelga '{strategy2}'
+    "opponent_noise_suspicion": 25  // stima (0-100): la sua ULTIMA azione era rumore (100) o strategica (0)? Tasso di rumore: {opponentNoiseRate}%
+  }},
+  "reason": "breve spiegazione (1-2 frasi)"
+}}

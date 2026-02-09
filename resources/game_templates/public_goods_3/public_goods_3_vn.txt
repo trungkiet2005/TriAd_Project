@@ -30,5 +30,14 @@ Mục tiêu của bạn là tối đa hóa điểm số của mình.
 Lịch sử: {history}.
 {historyNote}: [Lưu ý: Các hành động hiển thị trong lịch sử là hành động CUỐI CÙNG sau khi đã áp dụng nhiễu.]
 Hãy chọn giữa {strategy1} và {strategy2}.
-CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau: {{"action": "lựa chọn của bạn ({strategy1} hoặc {strategy2})", "beliefs": {{"opponent1_prob": 50, "opponent2_prob": 80}} }}
-[Yêu cầu: "beliefs" phải chứa xác suất (0-100) mà mỗi đối thủ sẽ chọn '{strategy2}']
+CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau:
+{{
+  "action": "lựa chọn của bạn ({strategy1} hoặc {strategy2})",
+  "beliefs": {{
+    "opponent1_contrib_prob": 50,  // xác suất (0-100) {opponent1} sẽ chọn '{strategy2}' (Đóng góp)
+    "opponent2_contrib_prob": 80,  // xác suất (0-100) {opponent2} sẽ chọn '{strategy2}' (Đóng góp)
+    "opponent1_noise_suspicion": 20,  // ước tính (0-100): hành động TRƯỚC ĐÓ của {opponent1} là nhiễu (100) hay chiến lược (0)? Tỷ lệ nhiễu: {opponentNoiseRate1}%
+    "opponent2_noise_suspicion": 15   // ước tính (0-100): hành động TRƯỚC ĐÓ của {opponent2} là nhiễu (100) hay chiến lược (0)? Tỷ lệ nhiễu: {opponentNoiseRate2}%
+  }},
+  "reason": "giải thích ngắn gọn (1-2 câu)"
+}}
