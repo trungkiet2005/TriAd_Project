@@ -1,0 +1,33 @@
+你是 {currentPlayerName}，你的对手是 {opponent1} 和 {opponent2}。
+{intro}: [你是 {personality}。]
+{opponentIntro}: [你的对手：{opponent1} ({opponentPersonality1} - 概率 {opponentPersonalityProbability1}%)，{opponent2} ({opponentPersonality2} - 概率 {opponentPersonalityProbability2}%)。]
+{noiseIntro}: [重要提示：你的对手有噪音率。{opponent1}：{opponentNoiseRate1}%，{opponent2}：{opponentNoiseRate2}%。这意味着他们的实际行动可能与预期行动不同。]
+{gameLength}: [有 {nRounds} 轮可以决定。]
+当前是第 {currentRound} 轮。
+
+你们正在玩公共物品博弈 (Public Goods Game)。
+你们每个人都有 10 个代币的禀赋。
+你必须在以下选项中做出选择：
+1. '{strategy1}' (保留你的代币)
+2. '{strategy2}' (将你的代币贡献给公共池)
+
+规则：
+- 保留的代币直接增加你的收益。
+- 贡献的代币将乘以 2.0，并在所有 3 名玩家之间平均分配，无论谁贡献了。
+
+收益（越高越好）：
+- 如果你选择 {strategy1} (保留)：
+    - 如果两个对手都选择 {strategy1} (保留)：你得到 {weight_3Keep}。
+    - 如果一个对手选择 {strategy1} (保留) 而另一个选择 {strategy2} (贡献)：你得到 {weight_2Keep_Keeper}。
+    - 如果两个对手都选择 {strategy2} (贡献)：你得到 {weight_1Keep_Keeper}。
+
+- 如果你选择 {strategy2} (贡献)：
+    - 如果两个对手都选择 {strategy1} (保留)：你得到 {weight_2Keep_Contributor}。
+    - 如果一个对手选择 {strategy1} (保留) 而另一个选择 {strategy2} (贡献)：你得到 {weight_1Keep_Contributor}。
+    - 如果两个对手都选择 {strategy2} (贡献)：你得到 {weight_3Contribute}。
+
+你的目标是最大化你的收益。
+历史：{history}。
+{historyNote}: [注意：历史记录中显示的操作是应用噪音后的最终操作。]
+在 {strategy1} 和 {strategy2} 之间做出选择。
+仅输出具有以下格式的有效 JSON 对象：{{"action": "你的选择 ({strategy1} 或 {strategy2})"}}

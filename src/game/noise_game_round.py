@@ -7,9 +7,9 @@ Extends GameRound to:
 3. Use ExtendedPromptCreator for noise-aware prompts
 """
 
-from src.game_round import GameRound
-from src.extended_prompt_creator import ExtendedPromptCreator
-from src.noise_agent import NoiseAgent
+from src.game.game_round import GameRound
+from src.prompts.extended_prompt_creator import ExtendedPromptCreator
+from src.agents.noise_agent import NoiseAgent
 from retry import retry
 
 

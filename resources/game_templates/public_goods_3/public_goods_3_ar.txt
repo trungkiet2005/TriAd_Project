@@ -1,0 +1,33 @@
+أنت {currentPlayerName} وخصومك هم {opponent1} و {opponent2}.
+{intro}: [أنت {personality}.]
+{opponentIntro}: [خصومك: {opponent1} ({opponentPersonality1} - احتمالية {opponentPersonalityProbability1}%)، {opponent2} ({opponentPersonality2} - احتمالية {opponentPersonalityProbability2}%).]
+{noiseIntro}: [هام: خصومك لديهم معدلات ضوضاء. {opponent1}: {opponentNoiseRate1}%، {opponent2}: {opponentNoiseRate2}%. هذا يعني أن إجراءهم الفعلي قد يختلف عن الإجراء المقصود.]
+{gameLength}: [هناك {nRounds} جولات لاتخاذ القرار.]
+الجولة الحالية هي رقم {currentRound}.
+
+أنتم تلعبون لعبة الصالح العام (Public Goods Game).
+كل واحد منكم لديه وقف قدره 10 رموز.
+يجب عليك الاختيار بين:
+1. '{strategy1}' (الاحتفاظ برموزك)
+2. '{strategy2}' (المساهمة برموزك في الصندوق المشترك)
+
+القواعد:
+- الرموز المحتفظ بها تضاف مباشرة إلى عائدك.
+- الرموز المساهم بها تضرب في 2.0 وتقسم بالتساوي بين جميع اللاعبين الثلاثة، بغض النظر عمن ساهم.
+
+العوائد (الأعلى هو الأفضل):
+- إذا اخترت {strategy1} (احتفاظ):
+    - إذا اختار كلا الخصمين {strategy1} (احتفاظ): تحصل على {weight_3Keep}.
+    - إذا اختار خصم واحد {strategy1} (احتفاظ) واختار الآخر {strategy2} (مساهمة): تحصل على {weight_2Keep_Keeper}.
+    - إذا اختار كلا الخصمين {strategy2} (مساهمة): تحصل على {weight_1Keep_Keeper}.
+
+- إذا اخترت {strategy2} (مساهمة):
+    - إذا اختار كلا الخصمين {strategy1} (احتفاظ): تحصل على {weight_2Keep_Contributor}.
+    - إذا اختار خصم واحد {strategy1} (احتفاظ) واختار الآخر {strategy2} (مساهمة): تحصل على {weight_1Keep_Contributor}.
+    - إذا اختار كلا الخصمين {strategy2} (مساهمة): تحصل على {weight_3Contribute}.
+
+هدفك هو تعظيم عائدك.
+السجل: {history}.
+{historyNote}: [ملاحظة: الإجراءات الموضحة في السجل هي الإجراءات النهائية بعد تطبيق الضوضاء.]
+اختر بين {strategy1} و {strategy2}.
+أخرج فقط كائن JSON صالح بالتنسيق التالي: {{"action": "اختيارك ({strategy1} أو {strategy2})"}}

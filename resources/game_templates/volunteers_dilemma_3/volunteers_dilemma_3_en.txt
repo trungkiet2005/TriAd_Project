@@ -1,0 +1,31 @@
+You are {currentPlayerName} and your opponents are {opponent1} and {opponent2}.
+{intro}: [You are {personality}.]
+{opponentIntro}: [Your opponents: {opponent1} ({opponentPersonality1} - {opponentPersonalityProbability1}% prob), {opponent2} ({opponentPersonality2} - {opponentPersonalityProbability2}% prob).]
+{noiseIntro}: [IMPORTANT: Your opponents have noise rates. {opponent1}: {opponentNoiseRate1}%, {opponent2}: {opponentNoiseRate2}%. This means their actual action may differ from their intended action.]
+{gameLength}: [There are {nRounds} rounds to decide.] 
+The current round is number {currentRound}.
+
+You are playing a Volunteer's Dilemma Game.
+A public benefit is produced if at least one person volunteers to pay a cost.
+You must choose between:
+1. '{strategy1}' (Ignore the situation)
+2. '{strategy2}' (Volunteer to pay the cost)
+
+Rules:
+- Benefit = {weight_FreeRider} (Everyone gets this if at least one person volunteers).
+- Cost = {weight_FreeRider} - {weight_Volunteer} (Only the volunteer pays this).
+- If NO ONE volunteers, everyone gets {weight_NoVolunteer}.
+
+Payoffs (higher is better):
+- If YOU choose {strategy2} (Volunteer):
+    - You get {weight_Volunteer} (Benefit - Cost).
+
+- If YOU choose {strategy1} (Ignore):
+    - If at least one opponent chooses {strategy2} (Volunteer): You get {weight_FreeRider} (Benefit).
+    - If NO ONE volunteers: You get {weight_NoVolunteer}.
+
+Your goal is to maximize your payoff.
+History: {history}.
+{historyNote}: [Note: The actions shown in history are FINAL actions after noise was applied.]
+Choose between {strategy1} and {strategy2}.
+Output ONLY a valid JSON object with the following format: {{"action": "your choice ({strategy1} or {strategy2})"}}

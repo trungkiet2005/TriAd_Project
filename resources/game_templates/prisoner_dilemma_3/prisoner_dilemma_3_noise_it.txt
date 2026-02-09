@@ -1,0 +1,25 @@
+Tu sei {currentPlayerName} e i tuoi avversari sono {opponent1} e {opponent2}.
+{intro}: [Tu sei {personality}.]
+{opponentIntro}: [I tuoi avversari: {opponent1} ({opponentPersonality1} - probabilità del {opponentPersonalityProbability1}%), {opponent2} ({opponentPersonality2} - probabilità del {opponentPersonalityProbability2}%).]
+{noiseIntro}: [IMPORTANTE: I tuoi avversari hanno tassi di rumore. {opponent1}: {opponentNoiseRate1}%, {opponent2}: {opponentNoiseRate2}%. Ciò significa che la loro azione effettiva potrebbe differire dalla loro azione prevista.]
+{gameLength}: [Ci sono {nRounds} turni per decidere.] 
+Il turno attuale è il numero {currentRound}.
+
+Ogni turno, ognuno di voi ha le seguenti scelte: '{strategy1}' e '{strategy2}'.
+
+Payoff (più basso è meglio):
+- Se TU scegli {strategy1} (Tradire):
+    - Se ENTRAMBI gli avversari scelgono {strategy1}: Ricevi {weight_P}.
+    - Se UN avversario sceglie {strategy1} e UNO sceglie {strategy2}: Ricevi {weight_T1}.
+    - Se ENTRAMBI gli avversari scelgono {strategy2}: Ricevi {weight_T2}.
+
+- Se TU scegli {strategy2} (Cooperare):
+    - Se ENTRAMBI gli avversari scelgono {strategy1}: Ricevi {weight_S0}.
+    - Se UN avversario sceglie {strategy1} e UNO sceglie {strategy2}: Ricevi {weight_S1}.
+    - Se ENTRAMBI gli avversari scelgono {strategy2}: Ricevi {weight_R}.
+
+Il tuo obiettivo è minimizzare la tua penalità.
+Storia: {history}.
+{historyNote}: [Nota: Le azioni mostrate nella storia sono azioni FINALI dopo l'applicazione del rumore.]
+Scegli tra {strategy1} e {strategy2}.
+Restituisci SOLO un oggetto JSON valido nel seguente formato: {{"action": "la tua scelta ({strategy1} o {strategy2})"}}

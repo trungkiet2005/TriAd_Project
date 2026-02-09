@@ -1,15 +1,35 @@
 import re
+from typing import Dict, Any, Optional, List
+from src.game.payoff_matrix import PayoffMatrix
 
 class PromptCreator:
+    """
+    Handles the generation of prompts for agents based on a template and game state.
+    
+    This class processes various parts of the prompt template (intro, opponent intro,
+    game length, communication, choice) and fills in dynamic values like agent names,
+    strategies, and payoffs.
+    """
    
-    def __init__(self, lang, prompt_template, n_rounds, n_rounds_known, payoff_matrix):
+    def __init__(self, lang: str, prompt_template: str, n_rounds: int, 
+                 n_rounds_known: bool, payoff_matrix: PayoffMatrix) -> None:
+        """
+        Initialize the PromptCreator.
+
+        Args:
+            lang (str): The language code (e.g., 'en', 'fr').
+            prompt_template (str): The raw template string.
+            n_rounds (int): The total number of rounds.
+            n_rounds_known (bool): Whether the number of rounds is known to agents.
+            payoff_matrix (PayoffMatrix): The payoff matrix object.
+        """
         self.language = lang
         self.prompt_template = prompt_template
         self.n_rounds = n_rounds
         self.n_rounds_known = n_rounds_known
         self.payoff_matrix = payoff_matrix
 
-    def _find_part(self, field_name):
+    def _find_part(self, field_name: str) -> Optional[re.Match]:
         """
         Finds a portion of the template of the form:
         {field_name}:[ ...some text... ]
@@ -19,12 +39,12 @@ class PromptCreator:
         match = re.search(pattern, self.prompt_template, flags=re.DOTALL)
         return match
     
-    def _remove_part(self, part):
+    def _remove_part(self, part: Optional[re.Match]) -> None:
         """Removes the entire matched portion from the template."""
         if part:
             self.prompt_template = self.prompt_template.replace(part.group(0), '')
 
-    def _replace_part(self, part, replacement=None):
+    def _replace_part(self, part: Optional[re.Match], replacement: Optional[str] = None) -> None:
         """
         Replaces the entire matched portion with its inside text (part.group(1)),
         or if 'replacement' is provided, uses that instead.
@@ -35,7 +55,7 @@ class PromptCreator:
             else:
                 self.prompt_template = self.prompt_template.replace(part.group(0), part.group(1))
 
-    def process_intro(self, agent, pv_dict):
+    def process_intro(self, agent: Any, pv_dict: Dict[str, Any]) -> None:
         """
         If agent has no personality, remove the block. Otherwise replace it
         and add agent.personality to the placeholder-value dict.
@@ -50,7 +70,7 @@ class PromptCreator:
             self._replace_part(intro)
             pv_dict['personality'] = agent.personality
 
-    def process_opponent_intro(self, agent, opponents, pv_dict):
+    def process_opponent_intro(self, agent: Any, opponents: List[Any], pv_dict: Dict[str, Any]) -> None:
         """
         A new version that can handle multiple opponents.
         - If *all* opponents have no personality or a 0 probability, remove the block.
@@ -83,7 +103,7 @@ class PromptCreator:
                 pv_dict[f"opponentPersonality{i}"] = opp.personality
                 pv_dict[f"opponentPersonalityProbability{i}"] = opp.opponent_personality_prob
 
-    def process_game_length(self, pv_dict):
+    def process_game_length(self, pv_dict: Dict[str, Any]) -> None:
         """
         If the number of rounds is known, keep the block and inject {nRounds}.
         Otherwise remove it.
@@ -99,7 +119,8 @@ class PromptCreator:
             self._remove_part(game_length)
 
 
-    def map_placeholders(self, agent_name, opponents, current_round, history):
+    def map_placeholders(self, agent_name: str, opponents: List[Any], 
+                        current_round: int, history: str) -> Dict[str, Any]:
         """
         Dynamically build the dictionary of placeholders to be injected later.
         In addition to agent_name, current_round, etc., we also add each opponent.
@@ -120,6 +141,10 @@ class PromptCreator:
             values[f"strategy{i+1}"] = self.payoff_matrix.strategies[key]
         for i, key in enumerate(weight_keys):
             values[f"weight{i+1}"] = self.payoff_matrix.weights[key]
+        
+        # Add weights by their actual name keys (e.g., {weight_T2}, {weight_P})
+        for key, val in self.payoff_matrix.weights.items():
+            values[key] = val
 
         # Create placeholders for opponents in a simpler form, e.g. "OpponentA, OpponentB, ..."
         # so you can handle something like "{opponent1}, {opponent2}" in the text.
@@ -128,13 +153,14 @@ class PromptCreator:
 
         return values 
     
-    def process_optional_parts(self, agent, opponents, pv_dict):
+    def process_optional_parts(self, agent: Any, opponents: List[Any], pv_dict: Dict[str, Any]) -> None:
         """A helper method that calls the other optional-part processors."""
         self.process_intro(agent, pv_dict)
         self.process_opponent_intro(agent, opponents, pv_dict)
         self.process_game_length(pv_dict)
     
-    def fill_template(self, agent, opponents, current_round, history, phase):
+    def fill_template(self, agent: Any, opponents: List[Any], 
+                      current_round: int, history: str, phase: str) -> str:
         """
         The main entry point.
         1) Build placeholders.
@@ -165,5 +191,5 @@ class PromptCreator:
             if actions['remove'] is not None:
                 self._remove_part(actions['remove'])
         prompt = self.prompt_template.format(**placeholder_value_dict)
-        print(f"CURRENT PROMPT {prompt}")
+        # print(f"CURRENT PROMPT {prompt}")
         return prompt

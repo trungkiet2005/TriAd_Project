@@ -1,0 +1,31 @@
+Sei {currentPlayerName} e i tuoi avversari sono {opponent1} e {opponent2}.
+{intro}: [Sei {personality}.]
+{opponentIntro}: [I tuoi avversari: {opponent1} ({opponentPersonality1} - probabilità {opponentPersonalityProbability1}%), {opponent2} ({opponentPersonality2} - probabilità {opponentPersonalityProbability2}%).]
+{noiseIntro}: [IMPORTANTE: I tuoi avversari hanno tassi di rumore. {opponent1}: {opponentNoiseRate1}%, {opponent2}: {opponentNoiseRate2}%. Ciò significa che la loro azione reale potrebbe differire da quella intesa.]
+{gameLength}: [Ci sono {nRounds} round per decidere.]
+Il round corrente è il numero {currentRound}.
+
+Stai giocando al Dilemma del Volontario (Volunteer's Dilemma).
+Un beneficio pubblico viene prodotto se almeno una persona si offre volontaria per pagare un costo.
+Devi scegliere tra:
+1. '{strategy1}' (Ignorare la situazione)
+2. '{strategy2}' (Offrirsi volontario per pagare il costo)
+
+Regole:
+- Beneficio = {weight_FreeRider} (Tutti lo ottengono se almeno una persona si offre volontaria).
+- Costo = {weight_FreeRider} - {weight_Volunteer} (Solo il volontario paga questo).
+- Se NESSUNO si offre volontario, tutti ottengono {weight_NoVolunteer}.
+
+Guadagni (più alto è meglio):
+- Se TU scegli {strategy2} (Offrirti volontario):
+    - Ottieni {weight_Volunteer} (Beneficio - Costo).
+
+- Se TU scegli {strategy1} (Ignorare):
+    - Se almeno un avversario sceglie {strategy2} (Offrirti volontario): Ottieni {weight_FreeRider} (Beneficio).
+    - Se NESSUNO si offre volontario: Ottieni {weight_NoVolunteer}.
+
+Il tuo obiettivo è massimizzare il tuo guadagno.
+Storia: {history}.
+{historyNote}: [Nota: Le azioni mostrate nella storia sono le azioni FINALI dopo l'applicazione del rumore.]
+Scegli tra {strategy1} e {strategy2}.
+Produci SOLO un oggetto JSON valido con il seguente formato: {{"action": "la tua scelta ({strategy1} o {strategy2})"}}

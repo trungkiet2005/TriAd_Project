@@ -1,3 +1,4 @@
+from typing import Dict, List, Tuple, Any, Optional
 
 class PayoffMatrix:
     """
@@ -6,51 +7,56 @@ class PayoffMatrix:
     This class is responsible for looking up valid strategies for the game,
     matching strategy keys to names, and applying the correct weights to each
     participant based on chosen strategies.
+    
+    Attributes:
+        matrix_data (Dict[str, Any]): A dictionary containing strategies, weights, matrix,
+                                      and combinations.
+        language (str): The language key used to select the correct strategy names.
     """
 
-    def __init__(self, matrix_data, language):
+    def __init__(self, matrix_data: Dict[str, Any], language: str) -> None:
         """
         Initialize the PayoffMatrix with the given matrix data and language.
 
         Args:
-            matrix_data (dict): A dictionary containing strategies, weights, matrix,
-                                and combinations.
+            matrix_data (Dict[str, Any]): A dictionary containing strategies, weights, matrix,
+                                          and combinations.
             language (str): The language key used to select the correct strategy names.
         """
         self.matrix_data = matrix_data
         self.language = language
 
     @property
-    def strategies(self):
+    def strategies(self) -> Dict[str, str]:
         """
         dict: The strategies available in the matrix for the given language.
         """
         return self.matrix_data['strategies'][self.language]
     
     @property
-    def weights(self):
+    def weights(self) -> Dict[str, int]:
         """
         dict: The weight values keyed by weight labels.
         """
         return self.matrix_data['weights']
     
     @property
-    def matrix(self):
+    def matrix(self) -> Dict[str, List[str]]:
         """
         dict: A mapping of combination keys to weight labels.
         """
         return self.matrix_data['matrix']
     
-    def get_weights_for_combination(self, strategy_list):
+    def get_weights_for_combination(self, strategy_list: List[str]) -> Tuple[int, ...]:
         """
         Given a list of strategy names, return the corresponding tuple of weights
         for that exact combination.
 
         Args:
-            strategy_list (list of str): The strategy names chosen by agents.
+            strategy_list (List[str]): The strategy names chosen by agents.
 
         Returns:
-            tuple: A tuple of weight values corresponding to the chosen strategies.
+            Tuple[int, ...]: A tuple of weight values corresponding to the chosen strategies.
 
         Raises:
             ValueError: If any strategy is invalid or if no matching combination is found.
@@ -70,12 +76,12 @@ class PayoffMatrix:
         
         raise ValueError("No matching combination found.")
 
-    def get_combination_key(self, round_strategies):
+    def get_combination_key(self, round_strategies: List[str]) -> str:
         """
         Return the key in the matrix that matches the given list of strategy keys.
 
         Args:
-            round_strategies (list of str): Strategy keys (not names) selected for a round.
+            round_strategies (List[str]): Strategy keys (not names) selected for a round.
 
         Returns:
             str: The combination key in the matrix.
@@ -88,13 +94,13 @@ class PayoffMatrix:
                 return combo_key
         raise ValueError("Combination not found.")
     
-    def attribute_scores(self, agents, round_strategies):
+    def attribute_scores(self, agents: List[Any], round_strategies: List[str]) -> None:
         """
         Attribute scores to each agent based on the selected round strategies.
 
         Args:
-            agents (list): A list of agent objects.
-            round_strategies (list of str): Strategy keys (not names) for each agent.
+            agents (List[Any]): A list of agent objects.
+            round_strategies (List[str]): Strategy keys (not names) for each agent.
         """
         combo_key = self.get_combination_key(round_strategies)
         weight_keys = list(self.matrix[combo_key])
@@ -120,5 +126,5 @@ class PayoffMatrix:
             weights = self.get_weights_for_combination([own_action, opponent_action])
             return weights[0]  # First weight is for the first player (own)
         except ValueError:
-            # Try reverse lookup for alternate name formats
+            # Try reverse lookup for alternate name formats or return 0 if failed
             return 0

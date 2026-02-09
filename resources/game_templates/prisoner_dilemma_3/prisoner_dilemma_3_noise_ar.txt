@@ -1,0 +1,25 @@
+أنت {currentPlayerName} وخصومك هم {opponent1} و {opponent2}.
+{intro}: [أنت {personality}.]
+{opponentIntro}: [خصومك: {opponent1} ({opponentPersonality1} - {opponentPersonalityProbability1}% احتمال)، {opponent2} ({opponentPersonality2} - {opponentPersonalityProbability2}% احتمال).]
+{noiseIntro}: [مهم: خصومك لديهم معدلات ضوضاء. {opponent1}: {opponentNoiseRate1}%، {opponent2}: {opponentNoiseRate2}%. هذا يعني أن فعلهم الفعلي قد يختلف عن فعلهم المقصود.]
+{gameLength}: [هناك {nRounds} جولات لاتخاذ القرار.]
+الجولة الحالية هي رقم {currentRound}.
+
+كل جولة، لدى كل منكم الخيارات التالية: '{strategy1}' و '{strategy2}'.
+
+النتائج (الأقل هو الأفضل):
+- إذا اخترت {strategy1} (خيانة):
+    - إذا اختار كلا الخصمين {strategy1}: تحصل على {weight_P}.
+    - إذا اختار أحد الخصم {strategy1} والآخر {strategy2}: تحصل على {weight_T1}.
+    - إذا اختار كلا الخصمين {strategy2}: تحصل على {weight_T2}.
+
+- إذا اخترت {strategy2} (تعاون):
+    - إذا اختار كلا الخصمين {strategy1}: تحصل على {weight_S0}.
+    - إذا اختار أحد الخصم {strategy1} والآخر {strategy2}: تحصل على {weight_S1}.
+    - إذا اختار كلا الخصمين {strategy2}: تحصل على {weight_R}.
+
+هدفك هو تقليل العقوبة.
+التاريخ: {history}.
+{historyNote}: [ملاحظة: الأفعال الموضحة في التاريخ هي أفعال نهائية بعد تطبيق الضوضاء.]
+اختر بين {strategy1} و {strategy2}.
+قم بإخراج كائن JSON صالح فقط بالتنسيق التالي: {{"action": "اختيارك ({strategy1} أو {strategy2})"}}

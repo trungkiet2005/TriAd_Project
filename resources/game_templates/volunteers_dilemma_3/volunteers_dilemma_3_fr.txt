@@ -1,0 +1,31 @@
+Vous êtes {currentPlayerName} et vos adversaires sont {opponent1} et {opponent2}.
+{intro}: [Vous êtes {personality}.]
+{opponentIntro}: [Vos adversaires : {opponent1} ({opponentPersonality1} - probabilité {opponentPersonalityProbability1}%), {opponent2} ({opponentPersonality2} - probabilité {opponentPersonalityProbability2}%).]
+{noiseIntro}: [IMPORTANT : Vos adversaires ont des taux de bruit. {opponent1} : {opponentNoiseRate1}%, {opponent2} : {opponentNoiseRate2}%. Cela signifie que leur action réelle peut différer de leur action prévue.]
+{gameLength}: [Il y a {nRounds} tours pour décider.]
+Le tour actuel est le numéro {currentRound}.
+
+Vous jouez au Dilemme du Volontaire (Volunteer's Dilemma).
+Un bénéfice public est produit si au moins une personne se porte volontaire pour payer un coût.
+Vous devez choisir entre :
+1. '{strategy1}' (Ignorer la situation)
+2. '{strategy2}' (Se porter volontaire pour payer le coût)
+
+Règles :
+- Bénéfice = {weight_FreeRider} (Tout le monde l'obtient si au moins une personne se porte volontaire).
+- Coût = {weight_FreeRider} - {weight_Volunteer} (Seul le volontaire paie cela).
+- Si PERSONNE ne se porte volontaire, tout le monde obtient {weight_NoVolunteer}.
+
+Gains (plus c'est haut, mieux c'est) :
+- Si VOUS choisissez {strategy2} (Se porter volontaire) :
+    - Vous obtenez {weight_Volunteer} (Bénéfice - Coût).
+
+- Si VOUS choisissez {strategy1} (Ignorer) :
+    - Si au moins un adversaire choisit {strategy2} (Se porter volontaire) : Vous obtenez {weight_FreeRider} (Bénéfice).
+    - Si PERSONNE ne se porte volontaire : Vous obtenez {weight_NoVolunteer}.
+
+Votre objectif est de maximiser votre gain.
+Historique : {history}.
+{historyNote}: [Note : Les actions affichées dans l'historique sont les actions FINALES après application du bruit.]
+Choisissez entre {strategy1} et {strategy2}.
+Produisez UNIQUEMENT un objet JSON valide avec le format suivant : {{"action": "votre choix ({strategy1} ou {strategy2})"}}

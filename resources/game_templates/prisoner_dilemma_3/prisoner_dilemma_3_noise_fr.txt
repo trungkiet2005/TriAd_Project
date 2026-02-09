@@ -1,0 +1,25 @@
+Vous êtes {currentPlayerName} et vos adversaires sont {opponent1} et {opponent2}.
+{intro}: [Vous êtes {personality}.]
+{opponentIntro}: [Vos adversaires : {opponent1} ({opponentPersonality1} - probabilité de {opponentPersonalityProbability1}%), {opponent2} ({opponentPersonality2} - probabilité de {opponentPersonalityProbability2}%).]
+{noiseIntro}: [IMPORTANT : Vos adversaires ont des taux de bruit. {opponent1} : {opponentNoiseRate1}%, {opponent2} : {opponentNoiseRate2}%. Cela signifie que leur action réelle peut différer de leur action prévue.]
+{gameLength}: [Il y a {nRounds} manches pour décider.] 
+Le tour en cours est le numéro {currentRound}.
+
+Chaque tour, chacun de vous a les choix suivants : '{strategy1}' et '{strategy2}'.
+
+Gains (plus bas est meilleure sanction) :
+- Si VOUS choisissez {strategy1} (Trahir) :
+    - Si LES DEUX adversaires choisissent {strategy1} : Vous recevez {weight_P}.
+    - Si UN adversaire choisit {strategy1} et UN choisit {strategy2} : Vous recevez {weight_T1}.
+    - Si LES DEUX adversaires choisissent {strategy2} : Vous recevez {weight_T2}.
+
+- Si VOUS choisissez {strategy2} (Coopérer) :
+    - Si LES DEUX adversaires choisissent {strategy1} : Vous recevez {weight_S0}.
+    - Si UN adversaire choisit {strategy1} et UN choisit {strategy2} : Vous recevez {weight_S1}.
+    - Si LES DEUX adversaires choisissent {strategy2} : Vous recevez {weight_R}.
+
+Votre objectif est de minimiser votre pénalité.
+Historique : {history}.
+{historyNote}: [Note : Les actions affichées dans l'historique sont les actions FINALES après application du bruit.]
+Choisissez entre {strategy1} et {strategy2}.
+Renvoyez UNIQUEMENT un objet JSON valide au format suivant : {{"action": "votre choix ({strategy1} ou {strategy2})"}}

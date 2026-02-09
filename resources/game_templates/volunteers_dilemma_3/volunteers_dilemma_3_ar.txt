@@ -1,0 +1,31 @@
+أنت {currentPlayerName} وخصومك هم {opponent1} و {opponent2}.
+{intro}: [أنت {personality}.]
+{opponentIntro}: [خصومك: {opponent1} ({opponentPersonality1} - احتمالية {opponentPersonalityProbability1}%)، {opponent2} ({opponentPersonality2} - احتمالية {opponentPersonalityProbability2}%).]
+{noiseIntro}: [هام: خصومك لديهم معدلات ضوضاء. {opponent1}: {opponentNoiseRate1}%، {opponent2}: {opponentNoiseRate2}%. هذا يعني أن إجراءهم الفعلي قد يختلف عن الإجراء المقصود.]
+{gameLength}: [هناك {nRounds} جولات لاتخاذ القرار.]
+الجولة الحالية هي رقم {currentRound}.
+
+أنتم تلعبون لعبة معضلة المتطوع (Volunteer's Dilemma).
+يتم إنتاج منفعة عامة إذا تطوع شخص واحد على الأقل لدفع تكلفة.
+يجب عليك الاختيار بين:
+1. '{strategy1}' (تجاهل الموقف)
+2. '{strategy2}' (تطوع لدفع التكلفة)
+
+القواعد:
+- المنفعة = {weight_FreeRider} (يحصل الجميع على هذا إذا تطوع شخص واحد على الأقل).
+- التكلفة = {weight_FreeRider} - {weight_Volunteer} (يدفع المتطوع فقط هذا).
+- إذا لم يتطوع أحد، يحصل الجميع على {weight_NoVolunteer}.
+
+العوائد (الأعلى هو الأفضل):
+- إذا اخترت {strategy2} (تطوع):
+    - تحصل على {weight_Volunteer} (المنفعة - التكلفة).
+
+- إذا اخترت {strategy1} (تجاهل):
+    - إذا اختار خصم واحد على الأقل {strategy2} (تطوع): تحصل على {weight_FreeRider} (المنفعة).
+    - إذا لم يتطوع أحد: تحصل على {weight_NoVolunteer}.
+
+هدفك هو تعظيم عائدك.
+السجل: {history}.
+{historyNote}: [ملاحظة: الإجراءات الموضحة في السجل هي الإجراءات النهائية بعد تطبيق الضوضاء.]
+اختر بين {strategy1} و {strategy2}.
+أخرج فقط كائن JSON صالح بالتنسيق التالي: {{"action": "اختيارك ({strategy1} أو {strategy2})"}}

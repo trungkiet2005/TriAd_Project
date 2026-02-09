@@ -15,9 +15,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import pandas as pd
 
-from src.noise_game import NoiseFairGame
-from src.noise_agent import NoiseAgent
-from src.agent import Agent
+from src.game.noise_game import NoiseFairGame
+from src.agents.noise_agent import NoiseAgent
+from src.agents.agent import Agent
 from src.io_managers.io_manager import IoManager
 from src.output_manager import DetailedOutputManager
 
@@ -130,7 +130,7 @@ class NoiseFairGameFactory:
         row_dict["Language"] = lang
         return pd.DataFrame([row_dict])
 
-    def create_noise_agents(self, game_config_row):
+    def create_noise_agents(self, game_config_row, strategies=None):
         """Create NoiseAgent instances based on the configuration row."""
         agents_dict = {}
         agent_names = []
@@ -164,7 +164,8 @@ class NoiseFairGameFactory:
                 personality=personality,
                 opponent_personality_prob=knowledge,
                 noise_rate=noise_rate,
-                opponent_noise_rate=opponent_noise_rate
+                opponent_noise_rate=opponent_noise_rate,
+                strategies=strategies
             )
         
         return agents_dict
@@ -172,7 +173,12 @@ class NoiseFairGameFactory:
     def _create_single_game(self, config, game_config_row, payoff_matrix):
         """Instantiate a single NoiseFairGame based on a configuration row."""
         prompt_template = self.build_prompt_template(config, game_config_row['Language'])
-        agents = self.create_noise_agents(game_config_row)
+        
+        # Extract strategies for the current language
+        lang = game_config_row['Language']
+        strategies = payoff_matrix.get('strategies', {}).get(lang, None)
+        
+        agents = self.create_noise_agents(game_config_row, strategies=strategies)
         
         return NoiseFairGame(
             config['name'],

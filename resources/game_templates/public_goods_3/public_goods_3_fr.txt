@@ -1,0 +1,33 @@
+Vous êtes {currentPlayerName} et vos adversaires sont {opponent1} et {opponent2}.
+{intro}: [Vous êtes {personality}.]
+{opponentIntro}: [Vos adversaires : {opponent1} ({opponentPersonality1} - probabilité {opponentPersonalityProbability1}%), {opponent2} ({opponentPersonality2} - probabilité {opponentPersonalityProbability2}%).]
+{noiseIntro}: [IMPORTANT : Vos adversaires ont des taux de bruit. {opponent1} : {opponentNoiseRate1}%, {opponent2} : {opponentNoiseRate2}%. Cela signifie que leur action réelle peut différer de leur action prévue.]
+{gameLength}: [Il y a {nRounds} tours pour décider.]
+Le tour actuel est le numéro {currentRound}.
+
+Vous jouez au Jeu des Biens Publics (Public Goods Game).
+Chacun de vous dispose d'une dotation de 10 jetons.
+Vous devez choisir entre :
+1. '{strategy1}' (Garder vos jetons)
+2. '{strategy2}' (Contribuer vos jetons au pot commun)
+
+Règles :
+- Les jetons gardés s'ajoutent directement à votre gain.
+- Les jetons contribués sont multipliés par 2.0 et partagés équitablement entre les 3 joueurs, quel que soit celui qui a contribué.
+
+Gains (plus c'est haut, mieux c'est) :
+- Si VOUS choisissez {strategy1} (Garder) :
+    - Si LES DEUX adversaires choisissent {strategy1} (Garder) : Vous obtenez {weight_3Keep}.
+    - Si UN adversaire choisit {strategy1} (Garder) et UN choisit {strategy2} (Contribuer) : Vous obtenez {weight_2Keep_Keeper}.
+    - Si LES DEUX adversaires choisissent {strategy2} (Contribuer) : Vous obtenez {weight_1Keep_Keeper}.
+
+- Si VOUS choisissez {strategy2} (Contribuer) :
+    - Si LES DEUX adversaires choisissent {strategy1} (Garder) : Vous obtenez {weight_2Keep_Contributor}.
+    - Si UN adversaire choisit {strategy1} (Garder) et UN choisit {strategy2} (Contribuer) : Vous obtenez {weight_1Keep_Contributor}.
+    - Si LES DEUX adversaires choisissent {strategy2} (Contribuer) : Vous obtenez {weight_3Contribute}.
+
+Votre objectif est de maximiser votre gain.
+Historique : {history}.
+{historyNote}: [Note : Les actions affichées dans l'historique sont les actions FINALES après application du bruit.]
+Choisissez entre {strategy1} et {strategy2}.
+Produisez UNIQUEMENT un objet JSON valide avec le format suivant : {{"action": "votre choix ({strategy1} ou {strategy2})"}}

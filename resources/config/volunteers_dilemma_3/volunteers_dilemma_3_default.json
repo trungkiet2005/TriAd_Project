@@ -1,0 +1,190 @@
+{
+    "name": "Volunteer's Dilemma 3-Player",
+    "nRounds": 10,
+    "nRoundsIsKnown": true,
+    "llm": "VLLMQwen",
+    "languages": [
+        "en",
+        "vn",
+        "fr",
+        "it",
+        "cn",
+        "ar"
+    ],
+    "allAgentPermutations": false,
+    "templateFilename": "volunteers_dilemma_3/volunteers_dilemma_3",
+    "noiseConfig": {
+        "agent1NoiseRate": 0.0,
+        "agent2NoiseRate": 0.0,
+        "agent3NoiseRate": 0.0
+    },
+    "enableHallucinationChecks": true,
+    "checkers": [
+        "time",
+        "rule",
+        "aggregation"
+    ],
+    "agents": {
+        "names": [
+            "agent1",
+            "agent2",
+            "agent3"
+        ],
+        "personalities": {
+            "en": [
+                "None",
+                "None",
+                "None"
+            ],
+            "vn": [
+                "Không có",
+                "Không có",
+                "Không có"
+            ],
+            "fr": [
+                "Aucun",
+                "Aucun",
+                "Aucun"
+            ],
+            "it": [
+                "Nessuno",
+                "Nessuno",
+                "Nessuno"
+            ],
+            "cn": [
+                "无",
+                "无",
+                "无"
+            ],
+            "ar": [
+                "لا شيء",
+                "لا شيء",
+                "لا شيء"
+            ]
+        },
+        "opponentPersonalityProb": [
+            0,
+            0,
+            0
+        ]
+    },
+    "payoffMatrix": {
+        "weights": {
+            "weight_Volunteer": 8.0,
+            "weight_FreeRider": 10.0,
+            "weight_NoVolunteer": 0.0
+        },
+        "strategies": {
+            "en": {
+                "strategy1": "Ignore",
+                "strategy2": "Volunteer"
+            },
+            "vn": {
+                "strategy1": "Bỏ qua",
+                "strategy2": "Tình nguyện"
+            },
+            "fr": {
+                "strategy1": "Ignorer",
+                "strategy2": "Se porter volontaire"
+            },
+            "it": {
+                "strategy1": "Ignorare",
+                "strategy2": "Offrirsi volontario"
+            },
+            "cn": {
+                "strategy1": "忽略",
+                "strategy2": "志愿"
+            },
+            "ar": {
+                "strategy1": "تجاهل",
+                "strategy2": "تطوع"
+            }
+        },
+        "combinations": {
+            "combination1": [
+                "strategy1",
+                "strategy1",
+                "strategy1"
+            ],
+            "combination2": [
+                "strategy1",
+                "strategy1",
+                "strategy2"
+            ],
+            "combination3": [
+                "strategy1",
+                "strategy2",
+                "strategy1"
+            ],
+            "combination4": [
+                "strategy2",
+                "strategy1",
+                "strategy1"
+            ],
+            "combination5": [
+                "strategy1",
+                "strategy2",
+                "strategy2"
+            ],
+            "combination6": [
+                "strategy2",
+                "strategy1",
+                "strategy2"
+            ],
+            "combination7": [
+                "strategy2",
+                "strategy2",
+                "strategy1"
+            ],
+            "combination8": [
+                "strategy2",
+                "strategy2",
+                "strategy2"
+            ]
+        },
+        "matrix": {
+            "combination1": [
+                "weight_NoVolunteer",
+                "weight_NoVolunteer",
+                "weight_NoVolunteer"
+            ],
+            "combination2": [
+                "weight_FreeRider",
+                "weight_FreeRider",
+                "weight_Volunteer"
+            ],
+            "combination3": [
+                "weight_FreeRider",
+                "weight_Volunteer",
+                "weight_FreeRider"
+            ],
+            "combination4": [
+                "weight_Volunteer",
+                "weight_FreeRider",
+                "weight_FreeRider"
+            ],
+            "combination5": [
+                "weight_FreeRider",
+                "weight_Volunteer",
+                "weight_Volunteer"
+            ],
+            "combination6": [
+                "weight_Volunteer",
+                "weight_FreeRider",
+                "weight_Volunteer"
+            ],
+            "combination7": [
+                "weight_Volunteer",
+                "weight_Volunteer",
+                "weight_FreeRider"
+            ],
+            "combination8": [
+                "weight_Volunteer",
+                "weight_Volunteer",
+                "weight_Volunteer"
+            ]
+        }
+    },
+    "stopGameWhen": [],
+    "agentsCommunicate": false
+}

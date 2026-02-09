@@ -1,5 +1,5 @@
-
-from src.prompt_creator import PromptCreator
+from typing import List, Any
+from src.prompts.prompt_creator import PromptCreator
 from retry import retry
 
 class GameRound:
@@ -8,7 +8,7 @@ class GameRound:
     and strategy selection phases for all agents.
     """
 
-    def __init__(self, game):
+    def __init__(self, game: Any) -> None:
         """
         Initialize with a reference to the FairGame instance.
 
@@ -17,9 +17,9 @@ class GameRound:
                              agents, history, and the payoff matrix.
         """
         self.game = game
-        self.round_number = game.current_round
+        self.round_number: int = game.current_round
 
-    def run(self):
+    def run(self) -> List[str]:
         """
         Execute one round of the game.
 
@@ -28,12 +28,12 @@ class GameRound:
         and choose a strategy.
 
         Returns:
-            list of str: The list of strategy keys (not names) chosen by agents this round.
+            List[str]: The list of strategy keys (not names) chosen by agents this round.
         """
         if self.game.agents_communicate:
             self._execute_communication_phase()
 
-        round_strategies = []
+        round_strategies: List[str] = []
         for agent in self.game.agents.values():
             prompt = self.create_prompt(agent, phase='choose')
             strategy = self._execute_agent_strategy(agent, prompt)
@@ -41,7 +41,7 @@ class GameRound:
 
         return round_strategies
 
-    def _execute_communication_phase(self):
+    def _execute_communication_phase(self) -> None:
         """
         Sends a communication prompt to each agent and records the resulting message
         in the game history.
@@ -54,12 +54,12 @@ class GameRound:
                 'message': message
             })
 
-    def create_prompt(self, agent, phase):
+    def create_prompt(self, agent: Any, phase: str) -> str:
         """
         Create a prompt for an agent based on the current game state.
 
         Args:
-            agent: The agent object to create the prompt for.
+            agent (Any): The agent object to create the prompt for.
             phase (str): The phase of the round ('communicate' or 'choose').
 
         Returns:
@@ -81,27 +81,27 @@ class GameRound:
             phase
         )
 
-    def _get_opponents(self, agent):
+    def _get_opponents(self, agent: Any) -> List[Any]:
         """
         Retrieve all other agents in the game that are not the specified agent.
 
         Args:
-            agent: The reference agent.
+            agent (Any): The reference agent.
 
         Returns:
-            list: A list of all agent objects except the reference agent.
+            List[Any]: A list of all agent objects except the reference agent.
         """
         return [a for a in self.game.agents.values() if a != agent]
 
     @retry(tries=10, delay=1)
-    def _execute_agent_strategy(self, agent, prompt):
+    def _execute_agent_strategy(self, agent: Any, prompt: str) -> str:
         """
         Retrieve a strategy from the agent after giving it a strategy prompt.
 
         Uses retry to handle cases where the agent fails to provide a valid strategy.
 
         Args:
-            agent: The agent object whose strategy is being determined.
+            agent (Any): The agent object whose strategy is being determined.
             prompt (str): The strategy prompt.
 
         Returns:
@@ -111,7 +111,7 @@ class GameRound:
             ValueError: If no matching strategy is found in the agent's response.
         """
         response = agent.execute_round(prompt)
-        print("RESPONSE ", response)
+        # print("RESPONSE ", response)
         found_strategy = next(
             (key for key, val in self.game.payoff_matrix.strategies.items()
              if val.lower() in response.lower()),
@@ -122,7 +122,7 @@ class GameRound:
             return found_strategy
         raise ValueError("No matching strategy found")
 
-    def _update_round_history(self):
+    def _update_round_history(self) -> None:
         """
         Update the game history with each agent's final strategy and score for this round.
         """

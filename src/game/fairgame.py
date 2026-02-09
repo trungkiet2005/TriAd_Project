@@ -1,7 +1,10 @@
-
-from src.payoff_matrix import PayoffMatrix
-from src.game_history import GameHistory
-from src.game_round import GameRound
+from typing import List, Dict, Any, Union
+from src.game.payoff_matrix import PayoffMatrix
+from src.game.game_history import GameHistory
+# Avoid circular import by importing inside method or using string forward references if needed.
+# For now, let's see if we can import GameRound. 
+# GameRound imports FairGame for type hinting usually.
+# Let's import GameRound inside the method where it's used to be safe.
 
 class FairGame:
     """
@@ -9,22 +12,23 @@ class FairGame:
     and checks for stop conditions.
     """
 
-    def __init__(self, name, language, agents, n_rounds, n_rounds_known,
-                 payoff_matrix_data, prompt_template, stop_conditions,
-                 agents_communicate):
+    def __init__(self, name: str, language: str, agents: Dict[str, Any], n_rounds: int, 
+                 n_rounds_known: Union[str, bool], payoff_matrix_data: Dict[str, Any], 
+                 prompt_template: str, stop_conditions: List[str], 
+                 agents_communicate: Union[str, bool]) -> None:
         """
         Initialize the FairGame with all required parameters.
 
         Args:
             name (str): The name of the game.
             language (str): The language used by the game and payoff matrix.
-            agents (dict): A dictionary mapping agent names to agent objects.
+            agents (Dict[str, Any]): A dictionary mapping agent names to agent objects.
             n_rounds (int): The total number of rounds to play.
-            n_rounds_known (str or bool): If the number of rounds is known to agents.
-            payoff_matrix_data (dict): The data defining the payoff matrix.
+            n_rounds_known (Union[str, bool]): If the number of rounds is known to agents.
+            payoff_matrix_data (Dict[str, Any]): The data defining the payoff matrix.
             prompt_template (str): The template used to generate prompts for agents.
-            stop_conditions (list): A list of combinations that end the game early if chosen.
-            agents_communicate (str or bool): Whether agents communicate before choosing strategies.
+            stop_conditions (List[str]): A list of combinations that end the game early if chosen.
+            agents_communicate (Union[str, bool]): Whether agents communicate before choosing strategies.
         """
         self.name = name
         self.language = language
@@ -36,15 +40,15 @@ class FairGame:
         self.agents_communicate = self._str2bool(agents_communicate)
         self.current_round = 1
         self.history = GameHistory()
-        self.choices_made = []
+        self.choices_made: List[List[str]] = []
         self.payoff_matrix = PayoffMatrix(payoff_matrix_data, language)
 
-    def _str2bool(self, value):
+    def _str2bool(self, value: Union[str, bool]) -> bool:
         """
         Convert a string or bool to a boolean value.
 
         Args:
-            value (str or bool): The value to interpret as bool.
+            value (Union[str, bool]): The value to interpret as bool.
 
         Returns:
             bool: The interpreted boolean value.
@@ -52,7 +56,7 @@ class FairGame:
         return value if isinstance(value, bool) else value.strip().lower() == 'true'
 
     @property
-    def description(self):
+    def description(self) -> Dict[str, Any]:
         """
         dict: A description of the game settings, including agents, language,
               number of rounds, and payoff matrix data.
@@ -67,20 +71,21 @@ class FairGame:
             "agents_communicate": self.agents_communicate
         }
 
-    def run_round(self):
+    def run_round(self) -> None:
         """
         Run a single round of the game using the GameRound helper class.
         Record the strategies chosen and update agent scores.
 
         This method increments the current_round after execution.
         """
+        from src.game.game_round import GameRound
         round_runner = GameRound(self)
         round_strategies = round_runner.run()
         self.choices_made.append(round_strategies)
         self.payoff_matrix.attribute_scores(list(self.agents.values()), round_strategies)
         round_runner._update_round_history()
 
-    def stop_condition_is_met(self):
+    def stop_condition_is_met(self) -> bool:
         """
         Check whether the stop condition is met based on the last round's choices.
 
@@ -100,7 +105,7 @@ class FairGame:
                 return True
         return False
 
-    def run(self):
+    def run(self) -> GameHistory:
         """
         Runs the simulation until all rounds are complete or a stop condition is met.
 

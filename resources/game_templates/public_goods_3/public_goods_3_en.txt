@@ -1,0 +1,33 @@
+You are {currentPlayerName} and your opponents are {opponent1} and {opponent2}.
+{intro}: [You are {personality}.]
+{opponentIntro}: [Your opponents: {opponent1} ({opponentPersonality1} - {opponentPersonalityProbability1}% prob), {opponent2} ({opponentPersonality2} - {opponentPersonalityProbability2}% prob).]
+{noiseIntro}: [IMPORTANT: Your opponents have noise rates. {opponent1}: {opponentNoiseRate1}%, {opponent2}: {opponentNoiseRate2}%. This means their actual action may differ from their intended action.]
+{gameLength}: [There are {nRounds} rounds to decide.] 
+The current round is number {currentRound}.
+
+You are playing a Public Goods Game.
+You each have an endowment of 10 tokens.
+You must choose between:
+1. '{strategy1}' (Keep your tokens)
+2. '{strategy2}' (Contribute your tokens to the common pool)
+
+Rules:
+- Tokens kept add directly to your payoff.
+- Tokens contributed are multiplied by 2.0 and split equally among all 3 players, regardless of who contributed.
+
+Payoffs (higher is better):
+- If YOU choose {strategy1} (Keep):
+    - If BOTH opponents choose {strategy1} (Keep): You get {weight_3Keep}.
+    - If ONE opponent chooses {strategy1} (Keep) and ONE chooses {strategy2} (Contribute): You get {weight_2Keep_Keeper}.
+    - If BOTH opponents choose {strategy2} (Contribute): You get {weight_1Keep_Keeper}.
+
+- If YOU choose {strategy2} (Contribute):
+    - If BOTH opponents choose {strategy1} (Keep): You get {weight_2Keep_Contributor}.
+    - If ONE opponent chooses {strategy1} (Keep) and ONE chooses {strategy2} (Contribute): You get {weight_1Keep_Contributor}.
+    - If BOTH opponents choose {strategy2} (Contribute): You get {weight_3Contribute}.
+
+Your goal is to maximize your payoff.
+History: {history}.
+{historyNote}: [Note: The actions shown in history are FINAL actions after noise was applied.]
+Choose between {strategy1} and {strategy2}.
+Output ONLY a valid JSON object with the following format: {{"action": "your choice ({strategy1} or {strategy2})"}}

@@ -1,0 +1,25 @@
+You are {currentPlayerName} and your opponents are {opponent1} and {opponent2}.
+{intro}: [You are {personality}.]
+{opponentIntro}: [Your opponents: {opponent1} ({opponentPersonality1} - {opponentPersonalityProbability1}% prob), {opponent2} ({opponentPersonality2} - {opponentPersonalityProbability2}% prob).]
+{noiseIntro}: [IMPORTANT: Your opponents have noise rates. {opponent1}: {opponentNoiseRate1}%, {opponent2}: {opponentNoiseRate2}%. This means their actual action may differ from their intended action.]
+{gameLength}: [There are {nRounds} rounds to decide.] 
+The current round is number {currentRound}.
+
+Every round each of you has the following choices: '{strategy1}' and '{strategy2}'.
+
+Payoffs (lower is better penalty):
+- If YOU choose {strategy1} (Defect):
+    - If BOTH opponents choose {strategy1}: You get {weight_P}.
+    - If ONE opponent chooses {strategy1} and ONE chooses {strategy2}: You get {weight_T1}.
+    - If BOTH opponents choose {strategy2}: You get {weight_T2}.
+
+- If YOU choose {strategy2} (Cooperate):
+    - If BOTH opponents choose {strategy1}: You get {weight_S0}.
+    - If ONE opponent chooses {strategy1} and ONE chooses {strategy2}: You get {weight_S1}.
+    - If BOTH opponents choose {strategy2}: You get {weight_R}.
+
+Your goal is to minimize your penalty.
+History: {history}.
+{historyNote}: [Note: The actions shown in history are FINAL actions after noise was applied.]
+Choose between {strategy1} and {strategy2}.
+Output ONLY a valid JSON object with the following format: {{"action": "your choice ({strategy1} or {strategy2})"}}

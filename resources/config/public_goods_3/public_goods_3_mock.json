@@ -1,0 +1,189 @@
+{
+    "name": "Public Goods Game 3-Player (Mock)",
+    "nRounds": 5,
+    "nRoundsIsKnown": true,
+    "llm": "MockLLM",
+    "languages": [
+        "en",
+        "vn",
+        "fr",
+        "it",
+        "cn",
+        "ar"
+    ],
+    "allAgentPermutations": false,
+    "templateFilename": "public_goods_3/public_goods_3",
+    "noiseConfig": {
+        "agent1NoiseRate": 0.0,
+        "agent2NoiseRate": 0.0,
+        "agent3NoiseRate": 0.0
+    },
+    "enableHallucinationChecks": true,
+    "checkers": [],
+    "agents": {
+        "names": [
+            "agent1",
+            "agent2",
+            "agent3"
+        ],
+        "personalities": {
+            "en": [
+                "None",
+                "None",
+                "None"
+            ],
+            "vn": [
+                "Không có",
+                "Không có",
+                "Không có"
+            ],
+            "fr": [
+                "Aucun",
+                "Aucun",
+                "Aucun"
+            ],
+            "it": [
+                "Nessuno",
+                "Nessuno",
+                "Nessuno"
+            ],
+            "cn": [
+                "无",
+                "无",
+                "无"
+            ],
+            "ar": [
+                "لا شيء",
+                "لا شيء",
+                "لا شيء"
+            ]
+        },
+        "opponentPersonalityProb": [
+            0,
+            0,
+            0
+        ]
+    },
+    "payoffMatrix": {
+        "weights": {
+            "weight_3Keep": 10.0,
+            "weight_2Keep_Keeper": 16.7,
+            "weight_2Keep_Contributor": 6.7,
+            "weight_1Keep_Keeper": 23.3,
+            "weight_1Keep_Contributor": 13.3,
+            "weight_3Contribute": 20.0
+        },
+        "strategies": {
+            "en": {
+                "strategy1": "Keep",
+                "strategy2": "Contribute"
+            },
+            "vn": {
+                "strategy1": "Giữ lại",
+                "strategy2": "Đóng góp"
+            },
+            "fr": {
+                "strategy1": "Garder",
+                "strategy2": "Contribuer"
+            },
+            "it": {
+                "strategy1": "Tenere",
+                "strategy2": "Contribuire"
+            },
+            "cn": {
+                "strategy1": "保留",
+                "strategy2": "贡献"
+            },
+            "ar": {
+                "strategy1": "احتفاظ",
+                "strategy2": "مساهمة"
+            }
+        },
+        "combinations": {
+            "combination1": [
+                "strategy1",
+                "strategy1",
+                "strategy1"
+            ],
+            "combination2": [
+                "strategy1",
+                "strategy1",
+                "strategy2"
+            ],
+            "combination3": [
+                "strategy1",
+                "strategy2",
+                "strategy1"
+            ],
+            "combination4": [
+                "strategy2",
+                "strategy1",
+                "strategy1"
+            ],
+            "combination5": [
+                "strategy1",
+                "strategy2",
+                "strategy2"
+            ],
+            "combination6": [
+                "strategy2",
+                "strategy1",
+                "strategy2"
+            ],
+            "combination7": [
+                "strategy2",
+                "strategy2",
+                "strategy1"
+            ],
+            "combination8": [
+                "strategy2",
+                "strategy2",
+                "strategy2"
+            ]
+        },
+        "matrix": {
+            "combination1": [
+                "weight_3Keep",
+                "weight_3Keep",
+                "weight_3Keep"
+            ],
+            "combination2": [
+                "weight_2Keep_Keeper",
+                "weight_2Keep_Keeper",
+                "weight_2Keep_Contributor"
+            ],
+            "combination3": [
+                "weight_2Keep_Keeper",
+                "weight_2Keep_Contributor",
+                "weight_2Keep_Keeper"
+            ],
+            "combination4": [
+                "weight_2Keep_Contributor",
+                "weight_2Keep_Keeper",
+                "weight_2Keep_Keeper"
+            ],
+            "combination5": [
+                "weight_1Keep_Keeper",
+                "weight_1Keep_Contributor",
+                "weight_1Keep_Contributor"
+            ],
+            "combination6": [
+                "weight_1Keep_Contributor",
+                "weight_1Keep_Keeper",
+                "weight_1Keep_Contributor"
+            ],
+            "combination7": [
+                "weight_1Keep_Contributor",
+                "weight_1Keep_Contributor",
+                "weight_1Keep_Keeper"
+            ],
+            "combination8": [
+                "weight_3Contribute",
+                "weight_3Contribute",
+                "weight_3Contribute"
+            ]
+        }
+    },
+    "stopGameWhen": [],
+    "agentsCommunicate": false
+}

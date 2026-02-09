@@ -1,16 +1,17 @@
 {
-    "name": "Prisoner's Dilemma with Noise",
+    "name": "Prisoner's Dilemma 3-Player with Noise (Mock)",
     "nRounds": 10,
     "nRoundsIsKnown": true,
-    "llm": "VLLMQwen",
+    "llm": "MockLLM",
     "languages": [
         "en"
     ],
     "allAgentPermutations": false,
-    "templateFilename": "prisoner_dilemma_2/prisoner_dilemma_noise",
+    "templateFilename": "prisoner_dilemma_3/prisoner_dilemma_3_noise",
     "noiseConfig": {
         "agent1NoiseRate": 0.1,
-        "agent2NoiseRate": 0.1
+        "agent2NoiseRate": 0.1,
+        "agent3NoiseRate": 0.1
     },
     "enableHallucinationChecks": true,
     "checkers": [
@@ -21,45 +22,55 @@
     "agents": {
         "names": [
             "agent1",
-            "agent2"
+            "agent2",
+            "agent3"
         ],
         "personalities": {
             "en": [
+                "None",
                 "None",
                 "None"
             ],
             "fr": [
                 "Aucun",
+                "Aucun",
                 "Aucun"
             ],
             "ar": [
+                "لا شيء",
                 "لا شيء",
                 "لا شيء"
             ],
             "cn": [
                 "无",
+                "无",
                 "无"
             ],
             "vn": [
                 "Không có",
+                "Không có",
                 "Không có"
             ],
             "it": [
+                "Nessuno",
                 "Nessuno",
                 "Nessuno"
             ]
         },
         "opponentPersonalityProb": [
             0,
+            0,
             0
         ]
     },
     "payoffMatrix": {
         "weights": {
-            "weight1": 8,
-            "weight2": 10,
-            "weight3": 0,
-            "weight4": 2
+            "weight_P": 8,
+            "weight_T1": 4,
+            "weight_T2": 0,
+            "weight_S0": 10,
+            "weight_S1": 6,
+            "weight_R": 2
         },
         "strategies": {
             "en": {
@@ -90,37 +101,85 @@
         "combinations": {
             "combination1": [
                 "strategy1",
+                "strategy1",
                 "strategy1"
             ],
             "combination2": [
                 "strategy1",
+                "strategy1",
                 "strategy2"
             ],
             "combination3": [
+                "strategy1",
                 "strategy2",
                 "strategy1"
             ],
             "combination4": [
+                "strategy2",
+                "strategy1",
+                "strategy1"
+            ],
+            "combination5": [
+                "strategy1",
+                "strategy2",
+                "strategy2"
+            ],
+            "combination6": [
+                "strategy2",
+                "strategy1",
+                "strategy2"
+            ],
+            "combination7": [
+                "strategy2",
+                "strategy2",
+                "strategy1"
+            ],
+            "combination8": [
+                "strategy2",
                 "strategy2",
                 "strategy2"
             ]
         },
         "matrix": {
             "combination1": [
-                "weight1",
-                "weight1"
+                "weight_P",
+                "weight_P",
+                "weight_P"
             ],
             "combination2": [
-                "weight3",
-                "weight2"
+                "weight_T1",
+                "weight_T1",
+                "weight_S0"
             ],
             "combination3": [
-                "weight2",
-                "weight3"
+                "weight_T1",
+                "weight_S0",
+                "weight_T1"
             ],
             "combination4": [
-                "weight4",
-                "weight4"
+                "weight_S0",
+                "weight_T1",
+                "weight_T1"
+            ],
+            "combination5": [
+                "weight_T2",
+                "weight_S1",
+                "weight_S1"
+            ],
+            "combination6": [
+                "weight_S1",
+                "weight_T2",
+                "weight_S1"
+            ],
+            "combination7": [
+                "weight_S1",
+                "weight_S1",
+                "weight_T2"
+            ],
+            "combination8": [
+                "weight_R",
+                "weight_R",
+                "weight_R"
             ]
         }
     },

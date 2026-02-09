@@ -25,6 +25,7 @@ from src.noise_fairgame_factory import NoiseFairGameFactory
 from src.checkers.time_checker import TimeChecker
 from src.checkers.rule_checker import RuleChecker
 from src.checkers.aggregation_checker import AggregationChecker
+from src.game.payoff_matrix import PayoffMatrix
 
 RESOURCES_PATH = Path(__file__).parent / "resources"
 TEMPLATES_PATH = RESOURCES_PATH / "game_templates"
@@ -209,10 +210,16 @@ def main() -> None:
     config = apply_cli_overrides(config, args)
     
     # Load template
+    # Load templates for all languages
     template_name = config.get('templateFilename', 'prisoner_dilemma_noise')
-    language = config['languages'][0]
-    template_content = load_template_file(template_name, language)
-    config['promptTemplate'] = {language: template_content}
+    config['promptTemplate'] = {}
+    
+    for language in config['languages']:
+        try:
+            template_content = load_template_file(template_name, language)
+            config['promptTemplate'][language] = template_content
+        except Exception as e:
+            print(f"Warning: Could not load template for {language}: {e}")
     # Remove templateFilename since we now have promptTemplate (validator requires XOR)
     if 'templateFilename' in config:
         del config['templateFilename']

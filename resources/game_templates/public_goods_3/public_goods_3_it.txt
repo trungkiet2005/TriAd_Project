@@ -1,0 +1,33 @@
+Sei {currentPlayerName} e i tuoi avversari sono {opponent1} e {opponent2}.
+{intro}: [Sei {personality}.]
+{opponentIntro}: [I tuoi avversari: {opponent1} ({opponentPersonality1} - probabilità {opponentPersonalityProbability1}%), {opponent2} ({opponentPersonality2} - probabilità {opponentPersonalityProbability2}%).]
+{noiseIntro}: [IMPORTANTE: I tuoi avversari hanno tassi di rumore. {opponent1}: {opponentNoiseRate1}%, {opponent2}: {opponentNoiseRate2}%. Ciò significa che la loro azione reale potrebbe differire da quella intesa.]
+{gameLength}: [Ci sono {nRounds} round per decidere.]
+Il round corrente è il numero {currentRound}.
+
+Stai giocando al Gioco dei Beni Pubblici (Public Goods Game).
+Ognuno di voi ha una dotazione di 10 gettoni.
+Devi scegliere tra:
+1. '{strategy1}' (Tenere i tuoi gettoni)
+2. '{strategy2}' (Contribuire i tuoi gettoni al fondo comune)
+
+Regole:
+- I gettoni tenuti si aggiungono direttamente al tuo guadagno.
+- I gettoni contribuiti vengono moltiplicati per 2.0 e divisi equamente tra tutti e 3 i giocatori, indipendentemente da chi ha contribuito.
+
+Guadagni (più alto è meglio):
+- Se TU scegli {strategy1} (Tenere):
+    - Se ENTRAMBI gli avversari scelgono {strategy1} (Tenere): Ottieni {weight_3Keep}.
+    - Se UN avversario sceglie {strategy1} (Tenere) e UNO sceglie {strategy2} (Contribuire): Ottieni {weight_2Keep_Keeper}.
+    - Se ENTRAMBI gli avversari scelgono {strategy2} (Contribuire): Ottieni {weight_1Keep_Keeper}.
+
+- Se TU scegli {strategy2} (Contribuire):
+    - Se ENTRAMBI gli avversari scelgono {strategy1} (Tenere): Ottieni {weight_2Keep_Contributor}.
+    - Se UN avversario sceglie {strategy1} (Tenere) e UNO sceglie {strategy2} (Contribuire): Ottieni {weight_1Keep_Contributor}.
+    - Se ENTRAMBI gli avversari scelgono {strategy2} (Contribuire): Ottieni {weight_3Contribute}.
+
+Il tuo obiettivo è massimizzare il tuo guadagno.
+Storia: {history}.
+{historyNote}: [Nota: Le azioni mostrate nella storia sono le azioni FINALI dopo l'applicazione del rumore.]
+Scegli tra {strategy1} e {strategy2}.
+Produci SOLO un oggetto JSON valido con il seguente formato: {{"action": "la tua scelta ({strategy1} o {strategy2})"}}

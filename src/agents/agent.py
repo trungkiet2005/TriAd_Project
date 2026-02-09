@@ -72,7 +72,8 @@ class Agent:
     by sending a prompt to the LLM service.
     """
 
-    def __init__(self, name: str, llm_service: str, personality: str, opponent_personality_prob: int) -> None:
+    def __init__(self, name: str, llm_service: str, personality: str, opponent_personality_prob: int, 
+                 strategies: Dict[str, str] = None) -> None:
         """
         Initialize the Agent instance.
 
@@ -82,6 +83,9 @@ class Agent:
             personality (str): The personality descriptor for the agent.
             opponent_personality_prob (int): The probability (as an integer percentage) that the opponent
                                              will behave cooperatively.
+            strategies (Dict[str, str], optional): A dictionary mapping strategy keys (e.g., 'strategy1') 
+                                                   to strategy names (e.g., 'Defect'). 
+                                                   Defaults to {'strategy1': 'Defect', 'strategy2': 'Cooperate'}.
         """
         self.name: str = name
         self.strategies: List[str] = []
@@ -90,6 +94,12 @@ class Agent:
         self.personality: str = personality
         self.opponent_personality_prob: int = opponent_personality_prob
         
+        # Default strategies if none provided (for backward compatibility)
+        if strategies is None:
+            self.strategy_names = {'strategy1': 'Defect', 'strategy2': 'Cooperate'}
+        else:
+            self.strategy_names = strategies
+
         # Store data for action_answers output (matches original paper format)
         self.action_answers: List[Dict[str, Any]] = []
 
@@ -101,7 +111,7 @@ class Agent:
             prompt (str): The prompt to send to the language model.
 
         Returns:
-            str: The strategy name ("Cooperate" or "Defect") extracted from LLM response.
+            str: The strategy name extracted from LLM response.
         """
         # Get raw LLM response
         generated_text = execute_prompt(self.llm_service, prompt)
@@ -115,43 +125,75 @@ class Agent:
         # Parse JSON from response
         answer = find_json_object(generated_text)
         
+        # Determine strategy from response
+        chosen_strategy_key = 'strategy1' # Default fallback
+        reason = ""
+
         if answer is None:
             # No JSON found - try to extract action directly from text
             warnings.warn(f"No JSON found in: {generated_text[:100]}... Using default.")
-            action_int = self._extract_action_from_text(generated_text)
-            reason = ""
+            chosen_strategy_key = self._extract_action_from_text(generated_text)
         else:
             try:
                 action_str = answer.get("action", "")
-                action_int = from_nat_lang(str(action_str))
+                reason = answer.get("reason", "")
+                
+                # Normalize action string
+                action_norm = str(action_str).lower().strip()
+                
+                # Check against strategy names
+                matched = False
+                for key, name in self.strategy_names.items():
+                    # Check exact match or if name matches 'action' field
+                    if action_norm == name.lower() or action_norm == key.lower():
+                        chosen_strategy_key = key
+                        matched = True
+                        break
+                
+                if not matched:
+                    # Try from_nat_lang style fallback for numbers 0/1 if applicable
+                    # or standard Coop/Defect if not found
+                    if "cooperate" in action_norm:
+                        chosen_strategy_key = 'strategy2'
+                    elif "defect" in action_norm:
+                        chosen_strategy_key = 'strategy1'
+                    else:
+                         warnings.warn(f"Unknown action: {action_str}. Using Default.")
+
             except Exception as e:
-                warnings.warn(f"Error parsing action: {e}. Using Defect.")
-                action_int = 0
-            
-            reason = answer.get("reason", "")
+                warnings.warn(f"Error parsing action: {e}. Using Default.")
         
-        # Convert action_int back to strategy name
-        action_name = "Cooperate" if action_int == 1 else "Defect"
+        # Get the actual name for the return value
+        action_name = self.strategy_names.get(chosen_strategy_key, "Defect")
         
-        # Store in action_answer
+        # Store in action_answer (using 1 for strategy2/Cooperate, 0 for strategy1/Defect for compat)
+        # This is a bit of a legacy hack for integer-based history in output manager
+        action_int = 1 if chosen_strategy_key == 'strategy2' else 0
+
         action_answer["action"] = action_int
         action_answer["reason"] = reason
         self.action_answers.append(action_answer)
         
         return action_name
     
-    def _extract_action_from_text(self, text: str) -> int:
-        """Try to extract action from plain text when JSON parsing fails."""
+    def _extract_action_from_text(self, text: str) -> str:
+        """Try to extract action key from plain text when JSON parsing fails."""
         text_lower = text.lower()
         
-        # Check for Cooperate first
-        if "cooperate" in text_lower:
-            return 1
-        if "defect" in text_lower:
-            return 0
+        # Check for dynamic strategies
+        for key, name in self.strategy_names.items():
+            if name.lower() in text_lower:
+                return key
         
-        # Default to Defect
-        return 0
+        # Fallback to standard check
+        if "cooperate" in text_lower:
+            return 'strategy2'
+        if "defect" in text_lower:
+            return 'strategy1'
+        
+        # Default
+        return 'strategy1'
+    
 
     def add_strategy(self, strategy: str) -> None:
         """

@@ -1,9 +1,9 @@
-
 from dotenv import load_dotenv
 from src.llm_connectors.anthropic_connector import AnthropicConnector
 from src.llm_connectors.mistral_connector import MistralConnector
 from src.llm_connectors.openai_connector import OpenAIConnector
 from src.llm_connectors.vllm_connector import VLLMConnector, VLLMQwenConnector
+from src.llm_connectors.mock_connector import MockConnector
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -16,6 +16,7 @@ MODEL_PROVIDER_MAP = {
     # vLLM models (requires VLLM_BASE_URL env var)
     "VLLMQwen": (VLLMConnector, "Qwen/Qwen2.5-32B-Instruct"),
     "VLLMQwen32B": (VLLMConnector, "Qwen/Qwen2.5-32B-Instruct"),
+    "MockLLM": (MockConnector, "mock-model"),
     # Add more mappings as needed.
 }
 

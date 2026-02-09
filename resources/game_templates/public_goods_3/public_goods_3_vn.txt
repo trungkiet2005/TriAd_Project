@@ -1,0 +1,33 @@
+Bạn là {currentPlayerName} và đối thủ của bạn là {opponent1} và {opponent2}.
+{intro}: [Bạn là {personality}.]
+{opponentIntro}: [Đối thủ của bạn: {opponent1} ({opponentPersonality1} - xác suất {opponentPersonalityProbability1}%), {opponent2} ({opponentPersonality2} - xác suất {opponentPersonalityProbability2}%).]
+{noiseIntro}: [QUAN TRỌNG: Đối thủ của bạn có tỷ lệ nhiễu. {opponent1}: {opponentNoiseRate1}%, {opponent2}: {opponentNoiseRate2}%. Điều này có nghĩa là hành động thực tế của họ có thể khác với hành động dự định.]
+{gameLength}: [Có {nRounds} vòng để quyết định.]
+Vòng hiện tại là vòng số {currentRound}.
+
+Bạn đang chơi Trò chơi Hàng hóa Công cộng (Public Goods Game).
+Mỗi người có khoản vốn là 10 token.
+Bạn phải chọn giữa:
+1. '{strategy1}' (Giữ lại token của mình)
+2. '{strategy2}' (Đóng góp token vào quỹ chung)
+
+Luật chơi:
+- Token giữ lại sẽ được cộng trực tiếp vào điểm của bạn.
+- Token đóng góp sẽ được nhân với 2.0 và chia đều cho tất cả 3 người chơi, bất kể ai đã đóng góp.
+
+Điểm thưởng (càng cao càng tốt):
+- Nếu BẠN chọn {strategy1} (Giữ lại):
+    - Nếu CẢ HAI đối thủ chọn {strategy1} (Giữ lại): Bạn nhận được {weight_3Keep}.
+    - Nếu MỘT đối thủ chọn {strategy1} (Giữ lại) và MỘT người chọn {strategy2} (Đóng góp): Bạn nhận được {weight_2Keep_Keeper}.
+    - Nếu CẢ HAI đối thủ chọn {strategy2} (Đóng góp): Bạn nhận được {weight_1Keep_Keeper}.
+
+- Nếu BẠN chọn {strategy2} (Đóng góp):
+    - Nếu CẢ HAI đối thủ chọn {strategy1} (Giữ lại): Bạn nhận được {weight_2Keep_Contributor}.
+    - Nếu MỘT đối thủ chọn {strategy1} (Giữ lại) và MỘT người chọn {strategy2} (Đóng góp): Bạn nhận được {weight_1Keep_Contributor}.
+    - Nếu CẢ HAI đối thủ chọn {strategy2} (Đóng góp): Bạn nhận được {weight_3Contribute}.
+
+Mục tiêu của bạn là tối đa hóa điểm số của mình.
+Lịch sử: {history}.
+{historyNote}: [Lưu ý: Các hành động hiển thị trong lịch sử là hành động CUỐI CÙNG sau khi đã áp dụng nhiễu.]
+Hãy chọn giữa {strategy1} và {strategy2}.
+CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau: {{"action": "lựa chọn của bạn ({strategy1} hoặc {strategy2})"}}

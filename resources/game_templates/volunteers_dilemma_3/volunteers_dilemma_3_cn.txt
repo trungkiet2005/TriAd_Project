@@ -1,0 +1,31 @@
+你是 {currentPlayerName}，你的对手是 {opponent1} 和 {opponent2}。
+{intro}: [你是 {personality}。]
+{opponentIntro}: [你的对手：{opponent1} ({opponentPersonality1} - 概率 {opponentPersonalityProbability1}%)，{opponent2} ({opponentPersonality2} - 概率 {opponentPersonalityProbability2}%)。]
+{noiseIntro}: [重要提示：你的对手有噪音率。{opponent1}：{opponentNoiseRate1}%，{opponent2}：{opponentNoiseRate2}%。这意味着他们的实际行动可能与预期行动不同。]
+{gameLength}: [有 {nRounds} 轮可以决定。]
+当前是第 {currentRound} 轮。
+
+你们正在玩志愿者困境博弈 (Volunteer's Dilemma)。
+如果至少有一人志愿支付成本，就会产生公共利益。
+你必须在以下选项中做出选择：
+1. '{strategy1}' (忽略情况)
+2. '{strategy2}' (志愿支付成本)
+
+规则：
+- 利益 = {weight_FreeRider} (如果至少有一人志愿，每个人都会得到这个)。
+- 成本 = {weight_FreeRider} - {weight_Volunteer} (只有志愿者支付这个)。
+- 如果没有人志愿，每个人得到 {weight_NoVolunteer}。
+
+收益（越高越好）：
+- 如果你选择 {strategy2} (志愿)：
+    - 你得到 {weight_Volunteer} (利益 - 成本)。
+
+- 如果你选择 {strategy1} (忽略)：
+    - 如果至少有一个对手选择 {strategy2} (志愿)：你得到 {weight_FreeRider} (利益)。
+    - 如果没有人志愿：你得到 {weight_NoVolunteer}。
+
+你的目标是最大化你的收益。
+历史：{history}。
+{historyNote}: [注意：历史记录中显示的操作是应用噪音后的最终操作。]
+在 {strategy1} 和 {strategy2} 之间做出选择。
+仅输出具有以下格式的有效 JSON 对象：{{"action": "你的选择 ({strategy1} 或 {strategy2})"}}

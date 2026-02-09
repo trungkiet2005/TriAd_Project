@@ -8,9 +8,9 @@ Extends FairGame to:
 4. Run hallucination checkers after each round
 """
 
-from src.fairgame import FairGame
-from src.noise_game_round import NoiseGameRound
-from src.noise_agent import NoiseAgent
+from src.game.fairgame import FairGame
+from src.game.noise_game_round import NoiseGameRound
+from src.agents.noise_agent import NoiseAgent
 
 
 class NoiseFairGame(FairGame):

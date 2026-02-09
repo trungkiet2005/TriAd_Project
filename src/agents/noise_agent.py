@@ -9,7 +9,8 @@ This extends the base Agent to support:
 
 import random
 from typing import Any, Dict, List, Tuple
-from src.agent import Agent
+from src.agents.agent import Agent
+from src.game.payoff_matrix import PayoffMatrix
 
 
 class NoiseAgent(Agent):
@@ -27,7 +28,8 @@ class NoiseAgent(Agent):
         personality: str, 
         opponent_personality_prob: int,
         noise_rate: float = 0.0,
-        opponent_noise_rate: float = 0.0
+        opponent_noise_rate: float = 0.0,
+        strategies: Dict[str, str] = None
     ) -> None:
         """
         Initialize the NoiseAgent instance.
@@ -40,7 +42,7 @@ class NoiseAgent(Agent):
             noise_rate (float): Probability (0.0-1.0) that this agent's action will be flipped.
             opponent_noise_rate (float): The opponent's noise rate (for prompt display).
         """
-        super().__init__(name, llm_service, personality, opponent_personality_prob)
+        super().__init__(name, llm_service, personality, opponent_personality_prob, strategies=strategies)
         self.noise_rate: float = max(0.0, min(1.0, noise_rate))  # Clamp to [0, 1]
         self.opponent_noise_rate: float = max(0.0, min(1.0, opponent_noise_rate))
         
