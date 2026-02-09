@@ -111,7 +111,7 @@ def run_experiments():
     for lang in LANGUAGES:
         try:
             prompt_templates[lang] = FileManager.read_template_file(
-                Path(f"resources/game_templates/{template_name}_{lang}.txt")
+                Path(f"/kaggle/working/TriAd_Project/resources/game_templates/prisoner_dilemma_2/prisoner_dilemma_noise_{lang}.txt")
             )
         except Exception as e:
             print(f"Error loading template {lang}: {e}")
@@ -130,6 +130,8 @@ def run_experiments():
                 'promptTemplate': {lang: prompt_templates[lang]},
                 'noiseConfig': {'agent1NoiseRate': noise, 'agent2NoiseRate': noise}
             })
+            if 'templateFilename' in current_config:
+                del current_config['templateFilename']
             
             try:
                 factory = NoiseFairGameFactory(

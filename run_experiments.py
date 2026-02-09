@@ -52,7 +52,7 @@ def run_experiments():
     for lang in LANGUAGES:
         try:
             template_content = FileManager.read_template_file(
-                Path(f"resources/game_templates/{template_name}_{lang}.txt")
+                Path(f"resources/game_templates/prisoner_dilemma_2/prisoner_dilemma_2_{lang}.txt")
             )
             prompt_templates[lang] = template_content
         except Exception as e:
@@ -88,6 +88,8 @@ def run_experiments():
             current_config['llmDisplayName'] = LLM_DISPLAY_NAME
             current_config['repeats'] = REPEATS
             current_config['promptTemplate'] = {lang: prompt_templates[lang]}
+            if 'templateFilename' in current_config:
+                del current_config['templateFilename']
             
             # Set noise
             current_config['noiseConfig'] = {
