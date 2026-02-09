@@ -60,10 +60,11 @@ d:\Triad_Project/
 │   ├── analysis/                 # Post-hoc analysis tools
 │   │   ├── data_loader.py       # Result parsing utilities
 │   │   └── visualizer.py        # Publication-quality plotting
-│   └── llm_connectors/           # LLM API integrations
-│       ├── openai_connector.py  # GPT-4 support
-│       ├── anthropic_connector.py # Claude support
-│       └── vllm_connector.py    # Local model support
+│   └── llm_connectors/           # LLM inference integrations
+│       ├── vllm_connector.py    # vLLM local inference (primary)
+│       ├── mock_connector.py    # Mock LLM for testing
+│       ├── openai_connector.py  # OpenAI API (optional)
+│       └── anthropic_connector.py # Anthropic API (optional)
 ├── resources/
 │   ├── game_templates/           # Game configurations
 │   │   ├── prisoner_dilemma_3/  # 3-player IPD
@@ -94,9 +95,16 @@ cd triad
 # Install dependencies
 pip install -r requirements.txt
 
-# Configure API keys (for non-mock experiments)
-cp .env.example .env
-# Edit .env with your API keys: OPENAI_API_KEY, ANTHROPIC_API_KEY
+# Install vLLM for local model inference
+pip install vllm
+
+# Download models (example for Llama-3.1-8B)
+# Models will be automatically downloaded from HuggingFace on first use
+# Supported models:
+# - meta-llama/Meta-Llama-3.1-8B-Instruct
+# - meta-llama/Meta-Llama-3.1-70B-Instruct
+# - Qwen/Qwen2.5-32B-Instruct
+# - mistralai/Mistral-7B-Instruct-v0.3
 ```
 
 ### Running Experiments
@@ -196,8 +204,10 @@ Agents must output structured beliefs before acting:
 
 | Model | TRS Score | Win Rate (Noisy) | Belief Accuracy |
 |-------|-----------|------------------|-----------------|
-| GPT-4o | +0.20 | 65% | 0.88 |
-| Claude 3.5 | +0.12 | 58% | 0.92 |
+| Llama-3.1-70B | +0.18 | 62% | 0.85 |
+| Qwen-2.5-32B | +0.14 | 59% | 0.89 |
+| Llama-3.1-8B | +0.08 | 51% | 0.78 |
+| Mistral-7B | -0.03 | 45% | 0.72 |
 | Qwen-2.5 | -0.05 | 42% | 0.76 |
 
 *Positive TRS indicates antifragility—models cooperate MORE under noise.*
