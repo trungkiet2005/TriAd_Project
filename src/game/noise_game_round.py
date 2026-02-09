@@ -149,9 +149,14 @@ class NoiseGameRound(GameRound):
             # Get the final strategy (after noise)
             final_strategy = agent.strategies[-1] if agent.strategies else None
             
+            # Get the latest action answer which contains the beliefs
+            last_answer = agent.action_answers[-1] if agent.action_answers else {}
+
             history_data = {
                 'strategy': final_strategy,
-                'score': agent.last_score() if agent.scores else 0
+                'score': agent.last_score() if agent.scores else 0,
+                'beliefs': last_answer.get('beliefs', {}),
+                'reason': last_answer.get('reason', "")
             }
             
             # Add noise info if available

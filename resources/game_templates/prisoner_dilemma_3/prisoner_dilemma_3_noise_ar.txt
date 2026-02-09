@@ -22,4 +22,5 @@
 التاريخ: {history}.
 {historyNote}: [ملاحظة: الأفعال الموضحة في التاريخ هي أفعال نهائية بعد تطبيق الضوضاء.]
 اختر بين {strategy1} و {strategy2}.
-قم بإخراج كائن JSON صالح فقط بالتنسيق التالي: {{"action": "اختيارك ({strategy1} أو {strategy2})"}}
+أخرج فقط كائن JSON صالح بالتنسيق التالي: {{"action": "اختيارك ({strategy1} أو {strategy2})", "beliefs": {{"opponent1_prob": 50, "opponent2_prob": 80}} }}
+[القيد: يجب أن يحتوي "beliefs" على الاحتمالية (0-100) بأن يختار كل خصم '{strategy2}']

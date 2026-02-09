@@ -127,7 +127,14 @@ class GameRound:
         Update the game history with each agent's final strategy and score for this round.
         """
         for agent in self.game.agents.values():
+            # Get the latest action answer which contains the beliefs
+            last_answer = agent.action_answers[-1] if agent.action_answers else {}
+            # print(f"DEBUG: Agent {agent.name} last_answer keys: {last_answer.keys()}")
+            # print(f"DEBUG: Beliefs: {last_answer.get('beliefs')}")
+            
             self.game.history.update_round(self.round_number, agent.name, {
                 'strategy': agent.last_strategy(),
-                'score': agent.last_score()
+                'score': agent.last_score(),
+                'beliefs': last_answer.get('beliefs', {}),
+                'reason': last_answer.get('reason', "")
             })

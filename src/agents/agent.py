@@ -172,6 +172,7 @@ class Agent:
 
         action_answer["action"] = action_int
         action_answer["reason"] = reason
+        action_answer["beliefs"] = answer.get("beliefs", {}) if answer else {}
         self.action_answers.append(action_answer)
         
         return action_name

@@ -30,4 +30,5 @@
 历史：{history}。
 {historyNote}: [注意：历史记录中显示的操作是应用噪音后的最终操作。]
 在 {strategy1} 和 {strategy2} 之间做出选择。
-仅输出具有以下格式的有效 JSON 对象：{{"action": "你的选择 ({strategy1} 或 {strategy2})"}}
+仅输出具有以下格式的有效 JSON 对象：{{"action": "你的选择 ({strategy1} 或 {strategy2})", "beliefs": {{"opponent1_prob": 50, "opponent2_prob": 80}} }}
+[约束："beliefs" 必须包含每个对手选择 '{strategy2}' 的概率 (0-100)]

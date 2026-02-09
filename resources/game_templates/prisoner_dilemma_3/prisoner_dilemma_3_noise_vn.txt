@@ -22,4 +22,5 @@ Mục tiêu của bạn là giảm thiểu hình phạt.
 Lịch sử: {history}.
 {historyNote}: [Lưu ý: Các hành động hiển thị trong lịch sử là hành động CUỐI CÙNG sau khi áp dụng nhiễu.]
 Chọn giữa {strategy1} và {strategy2}.
-CHỈ xuất ra một đối tượng JSON hợp lệ với định dạng sau: {{"action": "lựa chọn của bạn ({strategy1} hoặc {strategy2})"}}
+CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau: {{"action": "lựa chọn của bạn ({strategy1} hoặc {strategy2})", "beliefs": {{"opponent1_prob": 50, "opponent2_prob": 80}} }}
+[Yêu cầu: "beliefs" phải chứa xác suất (0-100) mà mỗi đối thủ sẽ chọn '{strategy2}']

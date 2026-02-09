@@ -30,4 +30,5 @@ Your goal is to maximize your payoff.
 History: {history}.
 {historyNote}: [Note: The actions shown in history are FINAL actions after noise was applied.]
 Choose between {strategy1} and {strategy2}.
-Output ONLY a valid JSON object with the following format: {{"action": "your choice ({strategy1} or {strategy2})"}}
+Output ONLY a valid JSON object with the following format: {{"action": "your choice ({strategy1} or {strategy2})", "beliefs": {{"opponent1_prob": 50, "opponent2_prob": 80}} }}
+[Constraint: "beliefs" must contain the probability (0-100) that each opponent will choose '{strategy2}']

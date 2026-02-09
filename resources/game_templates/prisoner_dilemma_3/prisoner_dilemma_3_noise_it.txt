@@ -22,4 +22,5 @@ Il tuo obiettivo è minimizzare la tua penalità.
 Storia: {history}.
 {historyNote}: [Nota: Le azioni mostrate nella storia sono azioni FINALI dopo l'applicazione del rumore.]
 Scegli tra {strategy1} e {strategy2}.
-Restituisci SOLO un oggetto JSON valido nel seguente formato: {{"action": "la tua scelta ({strategy1} o {strategy2})"}}
+Restituisci SOLO un oggetto JSON valido con il seguente formato: {{"action": "la tua scelta ({strategy1} o {strategy2})", "beliefs": {{"opponent1_prob": 50, "opponent2_prob": 80}} }}
+[Vincolo: "beliefs" deve contenere la probabilità (0-100) che ogni avversario scelga '{strategy2}']

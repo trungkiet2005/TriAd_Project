@@ -30,4 +30,5 @@ Votre objectif est de maximiser votre gain.
 Historique : {history}.
 {historyNote}: [Note : Les actions affichées dans l'historique sont les actions FINALES après application du bruit.]
 Choisissez entre {strategy1} et {strategy2}.
-Produisez UNIQUEMENT un objet JSON valide avec le format suivant : {{"action": "votre choix ({strategy1} ou {strategy2})"}}
+Produisez UNIQUEMENT un objet JSON valide avec le format suivant : {{"action": "votre choix ({strategy1} ou {strategy2})", "beliefs": {{"opponent1_prob": 50, "opponent2_prob": 80}} }}
+[Contrainte : "beliefs" doit contenir la probabilité (0-100) que chaque adversaire choisisse '{strategy2}']
