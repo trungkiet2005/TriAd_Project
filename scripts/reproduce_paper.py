@@ -18,12 +18,14 @@ Usage:
 import argparse
 import sys
 from pathlib import Path
-from datetime import datetime
+
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parents[1]))
 
 from src.experiments.experiment_runner import ExperimentRunner
 
 # Ensure resources are accessible
-RESOURCES_PATH = Path(__file__).parent / "resources"
+RESOURCES_PATH = Path(__file__).parents[1] / "resources"
 CONFIG_PATH = RESOURCES_PATH / "config"
 
 def run_trembling_paradox_experiments(runner, use_mock=False):

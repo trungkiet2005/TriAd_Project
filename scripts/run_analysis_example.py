@@ -2,6 +2,10 @@
 
 from pathlib import Path
 import glob
+import sys
+
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parents[1]))
 
 from src.utils.utils import setup_project_path
 from src.analysis.data_loader import DataLoader

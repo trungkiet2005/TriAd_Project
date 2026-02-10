@@ -7,6 +7,10 @@ print("Testing refactored modules...")
 
 # Test config module
 print("\n1. Testing config.py...")
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parents[1]))
+
 from src.analysis.config import (
     COOPERATION_KEYWORDS,
     COOPERATION_THRESHOLDS,

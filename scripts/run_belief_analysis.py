@@ -11,6 +11,11 @@ Can LLMs distinguish between strategic defectors and random noise?
 """
 
 from pathlib import Path
+import sys
+
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parents[1]))
+
 from src.utils.utils import setup_project_path, get_results_dir, print_section
 from src.analysis.data_loader import DataLoader
 from src.analysis.belief_analysis import BeliefAnalyzer

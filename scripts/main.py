@@ -16,7 +16,7 @@ from typing import Dict, Any
 from dotenv import load_dotenv
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parents[1]))
 
 from src.io_managers.file_manager import FileManager
 from src.results_processing.results_processor import ResultsProcessor
@@ -26,7 +26,7 @@ from src.checkers.rule_checker import RuleChecker
 from src.checkers.aggregation_checker import AggregationChecker
 from src.game.payoff_matrix import PayoffMatrix
 
-RESOURCES_PATH = Path(__file__).parent / "resources"
+RESOURCES_PATH = Path(__file__).parents[1] / "resources"
 TEMPLATES_PATH = RESOURCES_PATH / "game_templates"
 CONFIG_PATH = RESOURCES_PATH / "config"
 RESULTS_PATH = RESOURCES_PATH / "results"

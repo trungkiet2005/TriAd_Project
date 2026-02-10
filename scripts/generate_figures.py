@@ -53,11 +53,11 @@ class FigureGenerator:
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)    
     def _save_figure(self, name: str):
-        \"\"\"Save figure in both PDF and PNG formats.\"\"\"
+        # "\"\"Save figure in both PDF and PNG formats.\"\"\"
         plt.savefig(self.output_dir / f'{name}.pdf')
         plt.savefig(self.output_dir / f'{name}.png')
         plt.close()
-        print(f\"  ✓ Saved: {self.output_dir / name}.pdf\")        
+        print(f"  ✓ Saved: {self.output_dir / name}.pdf")        
     def load_data(self, pattern: str) -> pd.DataFrame:
         """Load all CSV files matching pattern."""
         files = list(self.input_dir.glob(pattern))

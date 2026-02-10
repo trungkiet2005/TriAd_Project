@@ -73,6 +73,10 @@ import sys
 import os
 from pathlib import Path
 
+# Force set environment variables for Kaggle (localhost)
+os.environ["VLLM_BASE_URL"] = "http://localhost:8000/v1"
+os.environ["VLLM_API_KEY"] = "EMPTY"
+
 # Thêm đường dẫn src
 sys.path.insert(0, str(Path(__file__).parent))
 

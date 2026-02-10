@@ -12,8 +12,12 @@ import sys
 import os
 from pathlib import Path
 
+# Force set environment variables for Kaggle (localhost)
+os.environ["VLLM_BASE_URL"] = "http://localhost:8000/v1"
+os.environ["VLLM_API_KEY"] = "EMPTY"
+
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parents[1]))
 
 from src.noise_fairgame_factory import NoiseFairGameFactory
 from src.checkers.time_checker import TimeChecker
@@ -34,7 +38,7 @@ BASE_CONFIG_NAME = "pd_noise_round_known_mild"
 
 def load_base_config():
     """Load the base configuration file."""
-    config_path = Path(f"resources/config/{CONFIG_DIR}/{BASE_CONFIG_NAME}.json")
+    config_path = Path(__file__).parents[1] / f"resources/config/{CONFIG_DIR}/{BASE_CONFIG_NAME}.json"
     return FileManager.read_json_file(config_path)
 
 def run_experiments():
@@ -52,7 +56,7 @@ def run_experiments():
     for lang in LANGUAGES:
         try:
             template_content = FileManager.read_template_file(
-                Path(f"resources/game_templates/prisoner_dilemma_2/prisoner_dilemma_2_{lang}.txt")
+                Path(__file__).parents[1] / f"resources/game_templates/prisoner_dilemma_2/prisoner_dilemma_2_{lang}.txt"
             )
             prompt_templates[lang] = template_content
         except Exception as e:
