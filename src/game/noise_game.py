@@ -23,7 +23,7 @@ class NoiseFairGame(FairGame):
 
     def __init__(self, name, language, agents, n_rounds, n_rounds_known,
                  payoff_matrix_data, prompt_template, stop_conditions,
-                 agents_communicate, checkers=None):
+                 agents_communicate, checkers=None, checker_every_n_rounds: int = 1):
         """
         Initialize the NoiseFairGame.
 
@@ -38,6 +38,7 @@ class NoiseFairGame(FairGame):
         )
         self.checkers = checkers or []
         self.checker_results = {}
+        self.checker_every_n_rounds = checker_every_n_rounds
 
     def run_round(self):
         """
@@ -55,9 +56,14 @@ class NoiseFairGame(FairGame):
         self.payoff_matrix.attribute_scores(list(self.agents.values()), round_strategies)
         round_runner._update_round_history()
         
-        # Run checkers after each round
-        if self.checkers:
+        # Run checkers on the configured interval
+        if self.checkers and self._should_run_checkers():
             self._run_checkers_for_round()
+
+    def _should_run_checkers(self) -> bool:
+        if self.checker_every_n_rounds <= 0:
+            return False
+        return self.current_round % self.checker_every_n_rounds == 0
 
     def _run_checkers_for_round(self):
         """Run all checkers for the current round using LLM connector directly."""
@@ -73,9 +79,9 @@ class NoiseFairGame(FairGame):
         for checker in self.checkers:
             for agent_name in self.agents.keys():
                 try:
-                    # Set the LLM connector for the checker
                     checker.set_llm_connector(llm_connector)
-                    # Ask checker questions
+                    checker.set_current_agent(agent_name)
+                    checker.set_current_round(self.current_round)
                     checker.ask_checker_questions(
                         game=self,
                         player_name=agent_name,

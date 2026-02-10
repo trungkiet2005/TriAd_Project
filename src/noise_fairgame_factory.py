@@ -179,7 +179,12 @@ class NoiseFairGameFactory:
         strategies = payoff_matrix.get('strategies', {}).get(lang, None)
         
         agents = self.create_noise_agents(game_config_row, strategies=strategies)
-        
+
+        # Create fresh checker instances per game to avoid shared state in parallel threads
+        game_checkers = [type(c)() for c in self.checkers] if self.checkers else []
+
+        checker_every_n_rounds = config.get("checkerEveryNRounds", 1)
+
         return NoiseFairGame(
             config['name'],
             game_config_row['Language'],
@@ -190,7 +195,8 @@ class NoiseFairGameFactory:
             prompt_template,
             config.get('stopGameWhen', []),
             config.get('agentsCommunicate', False),
-            checkers=self.checkers
+            checkers=game_checkers,
+            checker_every_n_rounds=checker_every_n_rounds
         )
 
     def _upload_output(self, game, game_history, game_n):
@@ -205,7 +211,7 @@ class NoiseFairGameFactory:
         }
         
         # Add checker results if checkers were enabled
-        if self.checkers:
+        if game.checkers:
             output['hallucination_check'] = game.get_checker_results()
         
         self.output_dict[f'game_{game_n}'] = output
@@ -290,11 +296,10 @@ class NoiseFairGameFactory:
         
         # Update run_id to next available
         self.detailed_output.run_id += len(self.games)
-        
-        # Finalize all detailed outputs (save checker results and summary CSV)
-        if self.checkers:
-            self.detailed_output.finalize_all(self.checkers)
-            print(f"Detailed outputs saved to: {self.detailed_output.base_dir}")
+
+        # Finalize all detailed outputs (save CSVs and summary files)
+        self.detailed_output.finalize_all()
+        print(f"Detailed outputs saved to: {self.detailed_output.base_dir}")
 
     def _run_single_game(self, game, game_idx: int, run_id: int):
         """Run a single game (called in parallel thread).
@@ -358,9 +363,11 @@ class NoiseFairGameFactory:
         if game.checkers:
             for checker in game.checkers:
                 self.detailed_output.save_checker_results(checker, run_id)
-        
-        # Build and record game summary for CSV
-        self._record_game_summary(game, game_idx, run_id)
+
+        # Record CSV rows for analysis-ready output
+        self.detailed_output.record_game_summary_row(game, game_idx, run_id)
+        self.detailed_output.record_rounds_detail_rows(game, game_idx, run_id)
+        self.detailed_output.record_checker_results_rows(game, game_idx, run_id)
 
     def create_and_run_games(self, config):
         """Validate configuration, create games, execute them, and return results."""
@@ -376,89 +383,6 @@ class NoiseFairGameFactory:
         except KeyError:
             template = self.io_manager.load_template(config.get('templateFilename', 'prisoner_dilemma_noise'), lang)
         return template
-
-    def _record_game_summary(self, game, game_idx: int, run_id: int):
-        """Build and record comprehensive game summary data for CSV export."""
-        agents_list = list(game.agents.items())
-        
-        # Get agent data
-        agent1_name, agent1 = agents_list[0] if len(agents_list) > 0 else ("", None)
-        agent2_name, agent2 = agents_list[1] if len(agents_list) > 1 else ("", None)
-        
-        def _get_agent_data(agent, agent_name):
-            if agent is None:
-                return {}
-            
-            strategies = list(agent.strategies) if hasattr(agent, 'strategies') else []
-            scores = list(agent.scores) if hasattr(agent, 'scores') else []
-            
-            # Get noise info from round histories if available
-            intended_strategies = []
-            flipped_count = 0
-            if hasattr(game, 'round_histories'):
-                for round_hist in game.round_histories:
-                    if agent_name in round_hist:
-                        noise_info = round_hist[agent_name].get('noise_info', {})
-                        intended_strategies.append(noise_info.get('original_strategy', ''))
-                        if noise_info.get('was_flipped', False):
-                            flipped_count += 1
-            
-            return {
-                "name": agent_name,
-                "llm": getattr(agent, 'llm_service', 'unknown'),
-                "personality": getattr(agent, 'personality', 'unknown'),
-                "noise_rate": getattr(agent, 'noise_rate', 0),
-                "strategies": str(strategies),
-                "intended_strategies": str(intended_strategies),
-                "flipped_count": flipped_count,
-                "scores": str(scores),
-                "total_score": sum(scores) if scores else 0
-            }
-        
-        agent1_data = _get_agent_data(agent1, agent1_name)
-        agent2_data = _get_agent_data(agent2, agent2_name)
-        
-        # Get checker accuracies
-        checker_accuracies = {}
-        if game.checkers:
-            for checker in game.checkers:
-                checker_accuracies[f"{checker.name}_accuracy"] = getattr(checker, 'sample_mean', 0)
-        
-        # Build game summary dict
-        game_data = {
-            "game_id": f"game_{game_idx}",
-            "language": getattr(game, 'language', 'unknown'),
-            "n_rounds_is_known": getattr(game, 'n_rounds_is_known', True),
-            "max_rounds": getattr(game, 'n_rounds', 0),
-            "played_rounds": len(game.choices_made) if hasattr(game, 'choices_made') else 0,
-            
-            # Agent 1 data
-            "agent1_name": agent1_data.get("name", ""),
-            "agent1_llm": agent1_data.get("llm", ""),
-            "agent1_personality": agent1_data.get("personality", ""),
-            "agent1_noise_rate": agent1_data.get("noise_rate", 0),
-            "agent1_strategies": agent1_data.get("strategies", ""),
-            "agent1_intended_strategies": agent1_data.get("intended_strategies", ""),
-            "agent1_flipped_count": agent1_data.get("flipped_count", 0),
-            "agent1_scores": agent1_data.get("scores", ""),
-            "agent1_total_score": agent1_data.get("total_score", 0),
-            
-            # Agent 2 data
-            "agent2_name": agent2_data.get("name", ""),
-            "agent2_llm": agent2_data.get("llm", ""),
-            "agent2_personality": agent2_data.get("personality", ""),
-            "agent2_noise_rate": agent2_data.get("noise_rate", 0),
-            "agent2_strategies": agent2_data.get("strategies", ""),
-            "agent2_intended_strategies": agent2_data.get("intended_strategies", ""),
-            "agent2_flipped_count": agent2_data.get("flipped_count", 0),
-            "agent2_scores": agent2_data.get("scores", ""),
-            "agent2_total_score": agent2_data.get("total_score", 0),
-            
-            # Checker accuracies
-            **checker_accuracies
-        }
-        
-        self.detailed_output.record_game_summary(game_data)
 
     def results_games(self):
         """Retrieve game results."""

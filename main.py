@@ -24,7 +24,7 @@ load_dotenv()
 
 
 #String 'http://localhost:8000/v1' or 'https://api.openai.com/v1'
-os.environ["VLLM_BASE_URL"] = "https://0d56-34-6-87-147.ngrok-free.app"
+os.environ["VLLM_BASE_URL"] = "https://1888-34-172-165-37.ngrok-free.app"
 os.environ["VLLM_API_KEY"] = "EMPTY" 
 
 # ==========================================
@@ -32,19 +32,18 @@ os.environ["VLLM_API_KEY"] = "EMPTY"
 # ==========================================
 
 # 1. Languages to run (list of codes: 'en', 'vn', 'fr', 'cn', 'ar', 'it')
-LANGUAGES = ['vn']
+LANGUAGES = ['en', 'vn', 'fr', 'cn', 'ar', 'it']  # Example: English, Vietnamese, French, Chinese, Arabic, Italian
 
 # 2. LLM Configuration
 LLM_NAME = "VLLMQwen"
 LLM_DISPLAY_NAME = "Qwen2.5-32B-Instruct"
 
 # 3. Noise Configuration (0.0 to 1.0)
-AGENT1_NOISE_RATE = 0.0
-AGENT2_NOISE_RATE = 0.0
+NOISE_RATES = [0.0, 0.05, 0.2]  # 0%, 5%, 20%
 
 # 4. Experiment Settings
-NUM_MATCHES = 2        # Number of times to repeat the game (repeats)
-NUM_ROUNDS = 10         # Number of rounds per match
+NUM_MATCHES = 1        # Number of times to repeat the game (repeats)
+NUM_ROUNDS = 5         # Number of rounds per match
 
 # 5. Template Configuration
 # Base configuration file to inherit from (defines payoff matrix, agents, etc.)
@@ -58,6 +57,7 @@ TEMPLATE_NAME = "prisoner_dilemma_noise"
 # 6. Checkers (Hallucination Detection)
 ENABLE_CHECKERS = True
 CHECKERS_List = ['time', 'rule', 'aggregation']
+CHECKER_EVERY_N_ROUNDS = 10  # 1 = check every round
 
 
 
@@ -87,7 +87,7 @@ def main():
     print(f"--- Starting Experiment Runner ---")
     print(f"Languages: {LANGUAGES}")
     print(f"Model: {LLM_DISPLAY_NAME}")
-    print(f"Noise: Agent1={AGENT1_NOISE_RATE}, Agent2={AGENT2_NOISE_RATE}")
+    print(f"Noise rates: {NOISE_RATES}")
     print(f"Settings: {NUM_MATCHES} matches, {NUM_ROUNDS} rounds")
     
     # 1. Load Base Config
@@ -104,22 +104,17 @@ def main():
     config['llm'] = LLM_NAME
     config['llmDisplayName'] = LLM_DISPLAY_NAME
     
-    # Update Noise Config
-    if 'noiseConfig' not in config:
-        config['noiseConfig'] = {}
-    config['noiseConfig']['agent1NoiseRate'] = AGENT1_NOISE_RATE
-    config['noiseConfig']['agent2NoiseRate'] = AGENT2_NOISE_RATE
-    
     # Update Checkers
     config['enableHallucinationChecks'] = ENABLE_CHECKERS
     config['checkers'] = CHECKERS_List
-    
+    config['checkerEveryNRounds'] = CHECKER_EVERY_N_ROUNDS
+
     # Disable early stopping (base config stops when both cooperate)
     check_stop = config.get('stopGameWhen', [])
     if check_stop:
         print(f"Overriding stop condition (was {check_stop}) to run full {NUM_ROUNDS} rounds.")
         config['stopGameWhen'] = []
-    
+
     # 3. Load Templates
     prompt_templates = {}
     for lang in LANGUAGES:
@@ -145,35 +140,36 @@ def main():
         if 'time' in CHECKERS_List: checkers.append(TimeChecker())
         if 'rule' in CHECKERS_List: checkers.append(RuleChecker())
         if 'aggregation' in CHECKERS_List: checkers.append(AggregationChecker())
-    
-    factory = NoiseFairGameFactory(
-        checkers=checkers,
-        llm_name=LLM_DISPLAY_NAME
-    )
 
-    print("\nRunning games...")
-    try:
-        results = factory.create_and_run_games(config)
-        
-        # Save results manually to ensure we have a record
-        from datetime import datetime
-        import json
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        results_dir = Path(__file__).parent / "resources" / "results"
-        results_dir.mkdir(parents=True, exist_ok=True)
-        
-        output_file = results_dir / f"manual_run_{timestamp}.json"
-        
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(results, f, indent=2, ensure_ascii=False, default=str)
-            
-        print(f"\nExperiment complete! Results saved to: {output_file}")
-        
-    except Exception as e:
-        print(f"\nError during execution: {e}")
-        import traceback
-        traceback.print_exc()
+    for agent1_rate in NOISE_RATES:
+        for agent2_rate in NOISE_RATES:
+            # Update Noise Config per run
+            if 'noiseConfig' not in config:
+                config['noiseConfig'] = {}
+            config['noiseConfig']['agent1NoiseRate'] = agent1_rate
+            config['noiseConfig']['agent2NoiseRate'] = agent2_rate
+
+            factory = NoiseFairGameFactory(
+                checkers=checkers,
+                llm_name=LLM_DISPLAY_NAME
+            )
+
+            print("\nRunning games...")
+            print(f"Noise: Agent1={agent1_rate}, Agent2={agent2_rate}")
+            try:
+                results = factory.create_and_run_games(config)
+
+                print(f"\nExperiment complete!")
+                print(f"Results saved to: {factory.detailed_output.base_dir}")
+                print(f"  - games_summary.csv    (1 row per game)")
+                print(f"  - rounds_detail.csv    (1 row per agent per round)")
+                print(f"  - checker_results.csv  (1 row per checker question)")
+                print(f"  - JSON files in action_answers/ and game_histories/")
+
+            except Exception as e:
+                print(f"\nError during execution: {e}")
+                import traceback
+                traceback.print_exc()
 
 if __name__ == "__main__":
     main()

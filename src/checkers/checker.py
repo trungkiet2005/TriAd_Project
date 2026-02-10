@@ -76,6 +76,10 @@ class Checker:
         # LLM connector (set via set_llm_connector)
         self.llm_connector = None
         
+        # Agent and round context tracking (for CSV export)
+        self._current_agent: str = ""
+        self._current_round: int = 0
+
         # Configuration
         self.max_new_tokens = 128
         self.temperature = 0.7
@@ -87,10 +91,18 @@ class Checker:
     def set_llm_connector(self, connector) -> None:
         """
         Set the LLM connector for asking questions.
-        
+
         This should be a connector with send_prompt(prompt, max_tokens) method.
         """
         self.llm_connector = connector
+
+    def set_current_agent(self, agent_name: str) -> None:
+        """Set the current agent being queried (for result tracking in CSV)."""
+        self._current_agent = agent_name
+
+    def set_current_round(self, round_number: int) -> None:
+        """Set the current round number (for result tracking in CSV)."""
+        self._current_round = round_number
 
     def get_answer_from_llm(self, prompt: str, label: str, max_new_tokens: int = None, 
                             temperature: float = None, need_str: bool = True) -> Any:
@@ -185,7 +197,9 @@ class Checker:
         self.questions_results[label][self.answer_str].append({
             "correct_answer": str(correct_answer),
             "llm_answer": str(llm_answer),
-            "is_correct": correct
+            "is_correct": correct,
+            "agent_name": self._current_agent,
+            "round_number": self._current_round
         })
         
         self.update_aggregates_for_question(label, int(correct))

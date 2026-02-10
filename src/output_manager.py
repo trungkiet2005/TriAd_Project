@@ -57,9 +57,14 @@ class DetailedOutputManager:
         self.current_game_id: int = 0
         self.current_game_metadata: Dict[str, Any] = {}
         
-        # Accumulate all games data for summary CSV
+        # Legacy: accumulate all games data for old summary CSV
         self.games_summary: List[Dict[str, Any]] = []
-        
+
+        # NEW: Accumulation buffers for analysis-ready CSVs
+        self.games_summary_rows: List[Dict[str, Any]] = []    # games_summary.csv
+        self.rounds_detail_rows: List[Dict[str, Any]] = []    # rounds_detail.csv
+        self.checker_results_rows: List[Dict[str, Any]] = []  # checker_results.csv
+
         # Initialize run ID by checking existing files
         self.run_id = self._find_next_run_id()
 
@@ -409,21 +414,316 @@ class DetailedOutputManager:
 
     def finalize_all(self, checkers: List = None) -> None:
         """
-        Finalize all runs and generate summary files.
-        
-        Args:
-            checkers: List of checker objects to save (legacy, for comprehension CSV)
+        Finalize all runs and generate all output files.
+
+        Writes:
+        - games_summary.csv (new format with scalar columns)
+        - rounds_detail.csv (round-level data)
+        - checker_results.csv (per-question checker data)
+        - comprehension_questions_results.csv (legacy format)
+        - timestamp log file
         """
-        # Generate comprehension questions CSV (legacy format)
+        # NEW: Write the three analysis-ready CSVs
+        self._save_games_summary_csv_v2()
+        self._save_rounds_detail_csv()
+        self._save_checker_results_csv()
+
+        # LEGACY: Generate comprehension questions CSV
         self.generate_summary_csv()
-        
-        # Generate comprehensive games summary CSV
-        self.save_games_summary_csv()
-        
+
         # Write log file with timestamp
         log_file = self.base_dir / f"{datetime.now().strftime('%Y%m%d%H%M%S')}.log"
         with open(log_file, "w") as f:
             f.write(f"Run completed at {datetime.now().isoformat()}\n")
             f.write(f"Total runs: {self.run_id}\n")
             f.write(f"Checkers: {list(self.checker_results.keys())}\n")
-            f.write(f"Total games: {len(self.games_summary)}\n")
+            f.write(f"Total games: {len(self.games_summary_rows)}\n")
+            f.write(f"Total round rows: {len(self.rounds_detail_rows)}\n")
+            f.write(f"Total checker rows: {len(self.checker_results_rows)}\n")
+
+    # ------------------------------------------------------------------
+    # NEW: Record methods (called per game from NoiseFairGameFactory)
+    # ------------------------------------------------------------------
+
+    def record_game_summary_row(self, game, game_idx: int, run_id: int) -> None:
+        """
+        Build a flat, pandas-friendly row for games_summary.csv.
+
+        Computes derived metrics (cooperation_rate, defection_rate) instead of
+        storing stringified strategy lists.
+        """
+        agents_list = list(game.agents.items())
+        agent1_name, agent1 = agents_list[0] if len(agents_list) > 0 else ("", None)
+        agent2_name, agent2 = agents_list[1] if len(agents_list) > 1 else ("", None)
+
+        # strategy2 is typically Cooperate in the payoff matrix config
+        cooperate_name = game.payoff_matrix.strategies.get('strategy2', 'Cooperate')
+
+        def _agent_summary(agent, agent_name):
+            if agent is None:
+                return {}
+            n_rounds = len(agent.strategies)
+            coop_count = agent.strategies.count(cooperate_name)
+            defect_count = n_rounds - coop_count
+            flipped = sum(agent.noise_events) if hasattr(agent, 'noise_events') else 0
+            flipped_rounds = []
+            if hasattr(agent, 'noise_events'):
+                flipped_rounds = [i + 1 for i, flag in enumerate(agent.noise_events) if flag]
+
+            # Compact strategy strings: "C,D,C,C,D" for easy reading + parsing
+            def _short(s):
+                return s[0].upper() if s else "?"
+
+            strategies_str = ",".join(_short(s) for s in agent.strategies)
+            intended_str = ""
+            if hasattr(agent, 'original_strategies'):
+                intended_str = ",".join(_short(s) for s in agent.original_strategies)
+
+            return {
+                "name": agent_name,
+                "llm": getattr(agent, 'llm_service', 'unknown'),
+                "personality": getattr(agent, 'personality', 'unknown'),
+                "noise_rate": getattr(agent, 'noise_rate', 0.0),
+                "total_score": sum(agent.scores) if agent.scores else 0,
+                "cooperation_rate": round(coop_count / n_rounds, 4) if n_rounds > 0 else 0,
+                "defection_rate": round(defect_count / n_rounds, 4) if n_rounds > 0 else 0,
+                "flipped_count": flipped,
+                "flipped_rounds": ",".join(str(r) for r in flipped_rounds),
+                "strategies": strategies_str,
+                "intended_strategies": intended_str,
+            }
+
+        a1 = _agent_summary(agent1, agent1_name)
+        a2 = _agent_summary(agent2, agent2_name)
+
+        # Checker accuracies
+        checker_acc = {}
+        if hasattr(game, 'checkers') and game.checkers:
+            for checker in game.checkers:
+                checker_acc[f"{checker.name}_accuracy"] = round(
+                    getattr(checker, 'sample_mean', 0), 4
+                )
+
+        row = {
+            "game_id": f"game_{game_idx}",
+            "run_id": run_id,
+            "timestamp": datetime.now().isoformat(),
+            "language": getattr(game, 'language', 'unknown'),
+            "n_rounds_known": getattr(game, 'n_rounds_known', True),
+            "max_rounds": getattr(game, 'n_rounds', 0),
+            "played_rounds": len(game.choices_made) if hasattr(game, 'choices_made') else 0,
+            # Agent 1
+            "agent1_name": a1.get("name", ""),
+            "agent1_llm": a1.get("llm", ""),
+            "agent1_personality": a1.get("personality", ""),
+            "agent1_noise_rate": a1.get("noise_rate", 0),
+            "agent1_total_score": a1.get("total_score", 0),
+            "agent1_cooperation_rate": a1.get("cooperation_rate", 0),
+            "agent1_defection_rate": a1.get("defection_rate", 0),
+            "agent1_flipped_count": a1.get("flipped_count", 0),
+            "agent1_flipped_rounds": a1.get("flipped_rounds", ""),
+            "agent1_strategies": a1.get("strategies", ""),
+            "agent1_intended_strategies": a1.get("intended_strategies", ""),
+            # Agent 2
+            "agent2_name": a2.get("name", ""),
+            "agent2_llm": a2.get("llm", ""),
+            "agent2_personality": a2.get("personality", ""),
+            "agent2_noise_rate": a2.get("noise_rate", 0),
+            "agent2_total_score": a2.get("total_score", 0),
+            "agent2_cooperation_rate": a2.get("cooperation_rate", 0),
+            "agent2_defection_rate": a2.get("defection_rate", 0),
+            "agent2_flipped_count": a2.get("flipped_count", 0),
+            "agent2_flipped_rounds": a2.get("flipped_rounds", ""),
+            "agent2_strategies": a2.get("strategies", ""),
+            "agent2_intended_strategies": a2.get("intended_strategies", ""),
+            # Checkers
+            **checker_acc,
+        }
+
+        self.games_summary_rows.append(row)
+
+    def record_rounds_detail_rows(self, game, game_idx: int, run_id: int) -> None:
+        """
+        Extract round-level data from a completed game.
+        Produces one row per agent per round for rounds_detail.csv.
+        """
+        agents_list = list(game.agents.items())
+        n_played = len(game.choices_made) if hasattr(game, 'choices_made') else 0
+
+        for round_idx in range(n_played):
+            for agent_name, agent in agents_list:
+                # Find opponent
+                opponent = None
+                for oname, oagent in agents_list:
+                    if oname != agent_name:
+                        opponent = oagent
+                        break
+
+                # Intended strategy (before noise)
+                intended = (agent.original_strategies[round_idx]
+                           if hasattr(agent, 'original_strategies')
+                           and round_idx < len(agent.original_strategies)
+                           else "")
+
+                # Final strategy (after noise)
+                final = (agent.strategies[round_idx]
+                        if round_idx < len(agent.strategies)
+                        else "")
+
+                # Was flipped by noise
+                was_flipped = (agent.noise_events[round_idx]
+                              if hasattr(agent, 'noise_events')
+                              and round_idx < len(agent.noise_events)
+                              else False)
+
+                # Score this round
+                score = agent.scores[round_idx] if round_idx < len(agent.scores) else 0
+
+                # Cumulative score
+                cumulative = sum(agent.scores[:round_idx + 1]) if agent.scores else 0
+
+                # Opponent strategies
+                opp_final = (opponent.strategies[round_idx]
+                            if opponent and round_idx < len(opponent.strategies)
+                            else "")
+                opp_intended = (opponent.original_strategies[round_idx]
+                               if opponent and hasattr(opponent, 'original_strategies')
+                               and round_idx < len(opponent.original_strategies)
+                               else "")
+
+                # Reason from LLM response
+                reason = ""
+                if round_idx < len(agent.action_answers):
+                    reason = agent.action_answers[round_idx].get("reason", "")
+
+                row = {
+                    "game_id": f"game_{game_idx}",
+                    "run_id": run_id,
+                    "round_number": round_idx + 1,
+                    "agent_name": agent_name,
+                    "agent_personality": getattr(agent, 'personality', ''),
+                    "agent_llm": getattr(agent, 'llm_service', ''),
+                    "agent_noise_rate": getattr(agent, 'noise_rate', 0.0),
+                    "intended_strategy": intended,
+                    "final_strategy": final,
+                    "was_flipped": was_flipped,
+                    "score": score,
+                    "cumulative_score": cumulative,
+                    "opponent_final_strategy": opp_final,
+                    "opponent_intended_strategy": opp_intended,
+                    "reason": str(reason)[:500],
+                }
+
+                self.rounds_detail_rows.append(row)
+
+    def record_checker_results_rows(self, game, game_idx: int, run_id: int) -> None:
+        """
+        Extract checker question-answer data from a completed game.
+        Produces one row per checker question answer for checker_results.csv.
+        """
+        if not hasattr(game, 'checkers') or not game.checkers:
+            return
+
+        for checker in game.checkers:
+            for label, data in checker.questions_results.items():
+                question_text = data.get("question", label)
+                answers = data.get("answer", [])
+
+                for answer_entry in answers:
+                    round_number = answer_entry.get("round_number")
+                    if round_number is None:
+                        round_number = getattr(checker, "_current_round", 0)
+
+                    row = {
+                        "game_id": f"game_{game_idx}",
+                        "run_id": run_id,
+                        "round_number": round_number,
+                        "checker_name": checker.name,
+                        "question_label": label,
+                        "question_text": question_text,
+                        "agent_name": answer_entry.get("agent_name", ""),
+                        "llm_answer": answer_entry.get("llm_answer", ""),
+                        "correct_answer": answer_entry.get("correct_answer", ""),
+                        "is_correct": answer_entry.get("is_correct", False),
+                    }
+                    self.checker_results_rows.append(row)
+
+    # ------------------------------------------------------------------
+    # NEW: CSV flush methods
+    # ------------------------------------------------------------------
+
+    def _save_games_summary_csv_v2(self) -> None:
+        """Save games_summary.csv with scalar columns (no stringified lists)."""
+        if not self.games_summary_rows:
+            return
+
+        filename = self.base_dir / "games_summary.csv"
+        fieldnames = [
+            "game_id", "run_id", "timestamp", "language", "n_rounds_known",
+            "max_rounds", "played_rounds",
+            "agent1_name", "agent1_llm", "agent1_personality", "agent1_noise_rate",
+            "agent1_total_score", "agent1_cooperation_rate", "agent1_defection_rate",
+            "agent1_flipped_count", "agent1_flipped_rounds", "agent1_strategies", "agent1_intended_strategies",
+            "agent2_name", "agent2_llm", "agent2_personality", "agent2_noise_rate",
+            "agent2_total_score", "agent2_cooperation_rate", "agent2_defection_rate",
+            "agent2_flipped_count", "agent2_flipped_rounds", "agent2_strategies", "agent2_intended_strategies",
+            "time_checker_accuracy", "rule_checker_accuracy",
+            "aggregation_checker_accuracy",
+        ]
+
+        with open(filename, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+            writer.writeheader()
+            for row in self.games_summary_rows:
+                row.setdefault("agent1_strategies", "")
+                row.setdefault("agent1_intended_strategies", "")
+                row.setdefault("agent1_flipped_rounds", "")
+                row.setdefault("agent2_strategies", "")
+                row.setdefault("agent2_intended_strategies", "")
+                row.setdefault("agent2_flipped_rounds", "")
+                writer.writerow(row)
+
+        print(f"[CSV] games_summary.csv saved to: {filename}")
+
+    def _save_rounds_detail_csv(self) -> None:
+        """Save rounds_detail.csv with one row per agent per round."""
+        if not self.rounds_detail_rows:
+            return
+
+        filename = self.base_dir / "rounds_detail.csv"
+        fieldnames = [
+            "game_id", "run_id", "round_number",
+            "agent_name", "agent_personality", "agent_llm", "agent_noise_rate",
+            "intended_strategy", "final_strategy", "was_flipped",
+            "score", "cumulative_score",
+            "opponent_final_strategy", "opponent_intended_strategy",
+            "reason",
+        ]
+
+        with open(filename, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+            writer.writeheader()
+            writer.writerows(self.rounds_detail_rows)
+
+        print(f"[CSV] rounds_detail.csv saved to: {filename}")
+
+    def _save_checker_results_csv(self) -> None:
+        """Save checker_results.csv with one row per checker question answer."""
+        if not self.checker_results_rows:
+            return
+
+        filename = self.base_dir / "checker_results.csv"
+        fieldnames = [
+            "game_id", "run_id", "round_number", "checker_name", "question_label",
+            "question_text", "agent_name", "llm_answer", "correct_answer",
+            "is_correct",
+        ]
+
+        with open(filename, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+            writer.writeheader()
+            for row in self.checker_results_rows:
+                row.setdefault("round_number", 0)
+                writer.writerow(row)
+
+        print(f"[CSV] checker_results.csv saved to: {filename}")
