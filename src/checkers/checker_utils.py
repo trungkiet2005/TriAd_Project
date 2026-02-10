@@ -211,7 +211,10 @@ def generate_prompt_from_sub_prompts(sub_prompts: List[str], zero_shot: bool = F
     Returns:
         str: Combined prompt in instruction format
     """
-    prompt = "<s>[INST] " + "".join(sub_prompts) + "Remember to answer using the right format.[/INST]\n"
+    # Stronger instruction to force JSON
+    instruction = "IMPORTANT: Provide your response ONLY in JSON format. Do not include any explanations, markdown formatting, or other text outside the JSON object."
+    
+    prompt = "<s>[INST] " + "".join(sub_prompts) + f"\n{instruction}\n[/INST]\n"
     if zero_shot:
         prompt += "Let's work this out step-by-step:\n"
     return prompt
@@ -238,16 +241,58 @@ def find_first_substring(text: str, substrings: Set[str]) -> str:
 
 
 def find_json_object(text: str) -> Dict[str, Any]:
-    """Find and parse a JSON object in text."""
+    """
+    Find and parse a JSON object in text.
+    Handles markdown code blocks and loose formatting.
+    """
     import json
     import re
+    
     if text is None:
         return None
+        
+    text = str(text).strip()
+    
+    # Remove markdown code blocks if present
+    # Matches ```json ... ``` or just ``` ... ```
+    match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+    if match:
+        text = match.group(1)
+        
     try:
-        # Try to find JSON in the text
-        match = re.search(r'\{[^{}]*\}', str(text))
-        if match:
-            return json.loads(match.group())
+        # First try: parse the whole text if it looks like JSON
+        if text.startswith('{') and text.endswith('}'):
+            return json.loads(text)
     except json.JSONDecodeError:
         pass
+
+    try:
+        # Second try: Assertive regex to find the outermost JSON object
+        # This regex looks for { followed by anything (non-greedy) and ending with }
+        # re.DOTALL allows matching across newlines
+        match = re.search(r'\{.*\}', text, re.DOTALL)
+        if match:
+            json_str = match.group()
+            return json.loads(json_str)
+    except json.JSONDecodeError:
+        pass
+        
+    try:
+        # Third try: Find the LAST occurrence of a JSON-like structure
+        # (Common in CoT where the answer is at the end)
+        matches = list(re.finditer(r'\{[^{}]*\}', text))
+        if matches:
+            return json.loads(matches[-1].group())
+    except json.JSONDecodeError:
+        pass
+        
+    # Final cleanup attempt: replace standard quotes
+    try:
+        clean_text = text.replace("'", '"')
+        match = re.search(r'\{.*\}', clean_text, re.DOTALL)
+        if match:
+             return json.loads(match.group())
+    except Exception:
+        pass
+
     return None
