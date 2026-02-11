@@ -22,8 +22,8 @@
 {{
   "action": "اختيارك ({strategy1} أو {strategy2})",
   "beliefs": {{
-    "opponent_coop_prob": 70,  // احتمال (0-100) أن {opponent1} سيختار '{strategy2}'
-    "opponent_noise_suspicion": 25  // تقدير (0-100): هل كان فعله الأخير ضوضاء (100) أم استراتيجي (0)؟ معدل الضوضاء: {opponentNoiseRate}%
+    "opponent_coop_prob": 50,  // احتمال (0-100) أن {opponent1} سيختار '{strategy2}'
+    "opponent_noise_suspicion": 50  // تقدير (0-100): هل كان فعله الأخير ضوضاء (100) أم استراتيجي (0)؟ معدل الضوضاء: {opponentNoiseRate}% (تجاهل للجولة 1)
   }},
   "reason": "شرح موجز (جملة أو جملتان)"
 }}

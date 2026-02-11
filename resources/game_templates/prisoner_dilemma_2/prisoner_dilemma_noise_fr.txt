@@ -22,8 +22,8 @@ Renvoyez UNIQUEMENT un objet JSON valide au format suivant :
 {{
   "action": "votre choix ({strategy1} ou {strategy2})",
   "beliefs": {{
-    "opponent_coop_prob": 70,  // probabilité (0-100) que {opponent1} choisisse '{strategy2}'
-    "opponent_noise_suspicion": 25  // estimation (0-100) : son DERNIER acte était-il du bruit (100) ou stratégique (0) ? Taux de bruit : {opponentNoiseRate}%
+    "opponent_coop_prob": 50,  // probabilité (0-100) que {opponent1} choisisse '{strategy2}'
+    "opponent_noise_suspicion": 50  // estimation (0-100) : son DERNIER acte était-il du bruit (100) ou stratégique (0) ? Taux de bruit : {opponentNoiseRate}% (Ignorer pour le tour 1)
   }},
   "reason": "brève explication (1-2 phrases)"
 }}

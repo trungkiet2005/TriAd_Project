@@ -1,0 +1,137 @@
+{
+  "name": "PD Noise Mistral-7B-Instruct-v0.2 Noise 0.0",
+  "nRounds": 30,
+  "nRoundsIsKnown": true,
+  "llm": "VLLMMistral7B",
+  "llmDisplayName": "Mistral-7B-Instruct-v0.2",
+  "languages": [
+    "en",
+    "fr",
+    "ar",
+    "cn",
+    "vn",
+    "it"
+  ],
+  "allAgentPermutations": true,
+  "templateFilename": "prisoner_dilemma_2/prisoner_dilemma_noise",
+  "noiseConfig": {
+    "agent1NoiseRate": 0.0,
+    "agent2NoiseRate": 0.0
+  },
+  "enableHallucinationChecks": true,
+  "checkers": [
+    "time",
+    "rule",
+    "aggregation"
+  ],
+  "checkerEveryNRounds": 10,
+  "agents": {
+    "names": [
+      "agent1",
+      "agent2"
+    ],
+    "personalities": {
+      "en": [
+        "cooperative",
+        "selfish"
+      ],
+      "fr": [
+        "coopératif",
+        "égoïste"
+      ],
+      "ar": [
+        "متعاون",
+        "أناني"
+      ],
+      "cn": [
+        "合作型的",
+        "自私型的"
+      ],
+      "vn": [
+        "một người hợp tác",
+        "một người ích kỷ"
+      ],
+      "it": [
+        "cooperativo",
+        "egoista"
+      ]
+    },
+    "opponentPersonalityProb": [
+      0
+    ]
+  },
+  "payoffMatrix": {
+    "weights": {
+      "weight1": 8,
+      "weight2": 10,
+      "weight3": 0,
+      "weight4": 2
+    },
+    "strategies": {
+      "en": {
+        "strategy1": "Defect",
+        "strategy2": "Cooperate"
+      },
+      "fr": {
+        "strategy1": "Trahir",
+        "strategy2": "Coopérer"
+      },
+      "ar": {
+        "strategy1": "خيانة",
+        "strategy2": "تعاون"
+      },
+      "cn": {
+        "strategy1": "背叛",
+        "strategy2": "合作"
+      },
+      "vn": {
+        "strategy1": "Phản bội",
+        "strategy2": "Hợp tác"
+      },
+      "it": {
+        "strategy1": "Tradire",
+        "strategy2": "Cooperare"
+      }
+    },
+    "combinations": {
+      "combination1": [
+        "strategy1",
+        "strategy1"
+      ],
+      "combination2": [
+        "strategy1",
+        "strategy2"
+      ],
+      "combination3": [
+        "strategy2",
+        "strategy1"
+      ],
+      "combination4": [
+        "strategy2",
+        "strategy2"
+      ]
+    },
+    "matrix": {
+      "combination1": [
+        "weight1",
+        "weight1"
+      ],
+      "combination2": [
+        "weight3",
+        "weight2"
+      ],
+      "combination3": [
+        "weight2",
+        "weight3"
+      ],
+      "combination4": [
+        "weight4",
+        "weight4"
+      ]
+    }
+  },
+  "stopGameWhen": [],
+  "agentsCommunicate": false,
+  "repeats": 10,
+  "isPenalty": true
+}

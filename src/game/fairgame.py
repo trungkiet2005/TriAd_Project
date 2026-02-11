@@ -15,7 +15,7 @@ class FairGame:
     def __init__(self, name: str, language: str, agents: Dict[str, Any], n_rounds: int, 
                  n_rounds_known: Union[str, bool], payoff_matrix_data: Dict[str, Any], 
                  prompt_template: str, stop_conditions: List[str], 
-                 agents_communicate: Union[str, bool]) -> None:
+                 agents_communicate: Union[str, bool], is_penalty: bool = True) -> None:
         """
         Initialize the FairGame with all required parameters.
 
@@ -29,6 +29,7 @@ class FairGame:
             prompt_template (str): The template used to generate prompts for agents.
             stop_conditions (List[str]): A list of combinations that end the game early if chosen.
             agents_communicate (Union[str, bool]): Whether agents communicate before choosing strategies.
+            is_penalty (bool): If True, the game payoffs are penalties (minimization). Default False.
         """
         self.name = name
         self.language = language
@@ -42,6 +43,7 @@ class FairGame:
         self.history = GameHistory()
         self.choices_made: List[List[str]] = []
         self.payoff_matrix = PayoffMatrix(payoff_matrix_data, language)
+        self.is_penalty = is_penalty
 
     def _str2bool(self, value: Union[str, bool]) -> bool:
         """

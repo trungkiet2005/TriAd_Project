@@ -12,14 +12,13 @@ from typing import Set
 
 from src.checkers.checker import Checker
 from src.checkers.checker_utils import (
-    player_1_, player_2_,
     generate_game_rules_prompt,
-    generate_history_prompt,
+    generate_history_prompt_generic,
     generate_prompt_from_sub_prompts,
     find_first_int,
-    find_first_substring,
     to_nat_lang
 )
+from src.checkers.checker_translations import get_translation
 
 
 class RuleChecker(Checker):
@@ -33,52 +32,20 @@ class RuleChecker(Checker):
     """
 
     def __init__(self):
-        questions = [
-            f"What is the highest payoff player {player_1_} can get in a single round?",
-            f"What is the lowest payoff player {player_1_} can get in a single round?",
-            f"Which actions is player {player_1_} allowed to play?",
-            f"Which is player {player_1_}'s payoff in a single round if {player_1_} plays {{}} and {player_2_} plays {{}}?",
-            f"Which is player {player_2_}'s payoff in a single round if {player_1_} plays {{}} and {player_2_} plays {{}}?",
-        ]
-        questions_labels = [
-            "max_payoff",
-            "min_payoff",
-            "allowed_actions",
-            f"round_payoff_{player_1_}",
-            f"round_payoff_{player_2_}",
-        ]
-        super().__init__("rule_checker", questions, questions_labels)
+        # We initialize with basic questions. 
+        # Specific payoff combination questions will be generated dynamically.
+        super().__init__("rule_checker", [], [])
 
     def check_payoff_bounds(self, is_max: bool, action_space: Set[str], 
                            payoff_function, question_idx: int) -> None:
         """Check if LLM knows the max/min possible payoff."""
-        min_payoff = None
-        max_payoff = None
-        
-        for primary_action in action_space:
-            for secondary_action in action_space:
-                payoff = payoff_function(primary_action, secondary_action)
-                if min_payoff is None or payoff < min_payoff:
-                    min_payoff = payoff
-                if max_payoff is None or payoff > max_payoff:
-                    max_payoff = payoff
-        
-        if is_max:
-            correct_answer = str(max_payoff)
-            json_prompt = 'Remember to use the following JSON format: {"answer": <MAX_PAYOFF>}\n'
-        else:
-            correct_answer = str(min_payoff)
-            json_prompt = 'Remember to use the following JSON format: {"answer": <MIN_PAYOFF>}\n'
-        
-        question = self.questions[question_idx]
-        label = self.questions_labels[question_idx]
-        question_prompt = f"Answer to the following question: {question}\n"
-        prompt = generate_prompt_from_sub_prompts([self.system_prompt, json_prompt, question_prompt])
-        llm_answer = find_first_int(self.get_answer_from_llm(prompt, label))
-        self.check_answer(llm_answer, correct_answer, label)
+        # Deprecated in favor of generic method below
+        pass
 
-    def check_allowed_actions(self, action_space: Set[str], question_idx: int) -> None:
+    def check_allowed_actions(self, action_space: Set[str], agent_name: str, 
+                              language: str, question_idx: int) -> None:
         """Check if LLM knows the allowed actions."""
+        # Dynamic question
         question = self.questions[question_idx]
         label = self.questions_labels[question_idx]
         correct_answer = {to_nat_lang(action, string_of_string=False) for action in action_space}
@@ -88,22 +55,67 @@ class RuleChecker(Checker):
         llm_answer = set(self.get_answer_from_llm(prompt, label, need_str=False))
         self.check_answer(llm_answer, correct_answer, label)
 
-    def check_payoff_of_combo(self, primary_action: str, secondary_action: str, 
-                              payoff_function, question_idx: int, is_inverse: bool = False) -> None:
-        """Check if LLM knows the payoff for a specific action combination."""
-        question = self.questions[question_idx]
-        label = self.questions_labels[question_idx]
-        correct_answer = str(payoff_function(primary_action, secondary_action))
-        json_prompt = 'Remember to use the following JSON format: {"answer": <PAYOFF>}\n'
+    def check_payoff_of_combo_dynamic(self, actions: list, payoff_matrix, agent_names: list, 
+                                      target_player_idx: int, language: str, is_penalty: bool) -> None:
+        """
+        Check if LLM knows the payoff for a specific action combination (N-player supported).
+        """
+        # Calculate correct answer
+        try:
+            weights = payoff_matrix.get_weights_for_combination(actions)
+            correct_answer = str(weights[target_player_idx])
+        except Exception as e:
+            print(f"Error calculating payoff for {actions}: {e}")
+            return
+
+        target_name = agent_names[target_player_idx]
         
-        if is_inverse:
-            question_prompt = f"Answer to the following question: {question.format(to_nat_lang(secondary_action), to_nat_lang(primary_action))}\n"
-        else:
-            question_prompt = f"Answer to the following question: {question.format(to_nat_lang(primary_action), to_nat_lang(secondary_action))}\n"
+        # Construct dynamic question using translations
+        # "What is player {Target}'s {unit} in a single round if {conditions}?"
+        condition_parts = []
+        for i, action in enumerate(actions):
+            # "player {player} plays '{action}'"
+            part = get_translation(language, "condition_play", player=agent_names[i], action=to_nat_lang(action))
+            condition_parts.append(part)
+            
+        join_and = get_translation(language, "join_and")
+        condition_str = join_and.join(condition_parts)
+        
+        unit_key = "unit_penalty" if is_penalty else "unit_points"
+        unit = get_translation(language, unit_key)
+        
+        question = get_translation(language, "rule_combo_payoff", 
+                                  player=target_name, unit=unit, conditions=condition_str)
+        
+        label = f"payoff_check_p{target_player_idx}_{'_'.join([str(a)[:3] for a in actions])}"
+        
+        # Add to local tracking if not present (though we probably add it in ask_checker_questions loop)
+        self.questions.append(question)
+        self.questions_labels.append(label)
+        if label not in self.questions_results:
+             self._init_question_result(label, question)
+        
+        json_prompt = 'Remember to use the following JSON format: {"answer": <PAYOFF>}\n'
+        question_prompt = f"Answer to the following question: {question}\n"
         
         prompt = generate_prompt_from_sub_prompts([self.system_prompt, json_prompt, question_prompt])
         llm_answer = find_first_int(self.get_answer_from_llm(prompt, label))
         self.check_answer(llm_answer, correct_answer, label)
+        
+    def _init_question_result(self, label: str, question: str):
+        """Helper to initialize result structure."""
+        self.questions_results[label] = {
+            self.checker_str: self.name,
+            self.question_str: question,
+            self.sample_mean_str: 0,
+            self.sample_variance_str: 0,
+            self.total_str: 0,
+            self.positives_str: 0,
+            self.squared_diffs_sum_str: 0,
+            self.prompt_str: [],
+            self.generated_text_str: [],
+            self.answer_str: [],
+        }
 
     def ask_checker_questions(self, game, player_name: str = "", history_window_size: int = None) -> None:
         """
@@ -114,83 +126,143 @@ class RuleChecker(Checker):
         n_players = len(game.agents)
         agent_names = list(game.agents.keys())
         
-        # Identify player index
-        player_idx = agent_names.index(player_name) if player_name in agent_names else 0
+        # Get Language and Penalty Mode from game config (or assume defaults)
+        # We need to access game.config if available, or pass it down.
+        # Assuming we can inspect game object for these properties if added, 
+        # or defaults.
+        # The user requested reading from config. The game object is created from config.
+        # But `game` object might not have direct `language` attribute on root.
+        # It has `agents` dict.
+        # We check `game.game_config` if it exists (from Factory).
+        # Fallback: check kwargs or similar?
+        # For now, let's look for known attributes or default to 'en'
         
-        # Get all histories ordered by agent index (0=A, 1=B, etc.)
-        all_histories = []
-        for name in agent_names:
-            all_histories.append([s for s in game.agents[name].strategies])
-            
+        # Typically configurations are passed to the factory.
+        # Let's try to detect language from agent personalities or simply default to 'vn' if requested.
+        # But we need to support dynamic run.
+        # Is there a global config attached to game?
+        # In `NoiseFairGameFactory`: `game = NoiseFairGame(...)`
+        # In `NoiseFairGame`: `self.payoff_matrix = ...`
+        
+        # Let's assume for this refactor we might need to update `NoiseFairGame` to store `language` and `is_penalty`.
+        # OR we try to deduce it.
+        # If `payoffMatrix` has "penalty" word, maybe implies penalty?
+        # The user said "game dùng hình phạt nha" (game uses penalty).
+        
+        language = getattr(game, 'language', 'en')
+        is_penalty = getattr(game, 'is_penalty', False)
+        
         # Get action space
         action_space = set(game.payoff_matrix.strategies.values())
         
         # Generate generic system prompt
-        from src.checkers.checker_utils import generate_game_rules_prompt, generate_history_prompt_generic
+        game_rules_prompt = generate_game_rules_prompt(
+            action_space, game.payoff_matrix, n_iterations, 
+            agent_names, language=language, is_penalty=is_penalty
+        )
         
-        game_rules_prompt = generate_game_rules_prompt(action_space, game.payoff_matrix, n_iterations)
+        # Gather histories
+        all_histories = []
+        for name in agent_names:
+            all_histories.append([s for s in game.agents[name].strategies])
+            
+        # Determine player index
+        player_idx = agent_names.index(player_name) if player_name in agent_names else 0
+
         history_prompt = generate_history_prompt_generic(
-            all_histories, player_idx, game.payoff_matrix, 
-            window_size=history_window_size, is_ended=(len(all_histories[0]) >= n_iterations)
+            all_histories, player_idx, game.payoff_matrix, agent_names,
+            window_size=history_window_size, is_ended=(len(all_histories[0]) >= n_iterations),
+            language=language, is_penalty=is_penalty
         )
         self.system_prompt = game_rules_prompt + history_prompt
+        
+        # Reset questions
+        self.questions = []
+        self.questions_labels = []
 
-        # For N-player games, checking every single payoff combination is exponential.
-        # We will restrict to a few random or critical checks, or use the min/max checks which are safe.
-        
-        # Question 0: Max payoff
-        # Max payoff calculation is complex for N players without iterating everything.
-        # But we can iterate the matrix combinations given in PayoffMatrix.
-        # Let's assume we can skip exact max/min verification for now or implement a helper.
-        # Or just use the bounds from the payoffs we know.
-        
-        # Actually, for 3-player, iterating combinations is fine (2^3 = 8 for binary actions).
-        # We need a helper to calculate max/min from the matrix.
-        self._check_payoff_bounds_generic(True, game.payoff_matrix, question_idx=0)
-        self._check_payoff_bounds_generic(False, game.payoff_matrix, question_idx=1)
+        # Question 0 & 1: Max/Min bounds (Dynamic generation logic)
+        self._check_payoff_bounds_generic_dynamic(True, game.payoff_matrix, agent_names, 0, language, is_penalty)
+        self._check_payoff_bounds_generic_dynamic(False, game.payoff_matrix, agent_names, 0, language, is_penalty)
         
         # Question 2: Allowed actions
-        self.check_allowed_actions(action_space, question_idx=2)
+        q_text = get_translation(language, "rule_allowed_actions", player=agent_names[0])
+        self.questions.append(q_text)
+        self.questions_labels.append("allowed_actions")
+        self._init_question_result("allowed_actions", q_text)
+        
+        self.check_allowed_actions(action_space, agent_names[0], language, len(self.questions)-1)
         
         # Payoff checks: Testing specific combinations
-        # We can test "If everyone plays Cooperate" etc.
-        # This requires adapting check_payoff_of_combo to take N actions.
-        # For simplicity in this refactor, we skip the exhaustive combo checks 
-        # or implement a simple check for "All First Strategy" and "All Second Strategy"
-        pass
+        sorted_actions = sorted(list(action_space))
+        if len(sorted_actions) >= 2:
+            action1 = sorted_actions[0] 
+            action2 = sorted_actions[1] 
+            
+            # Test 1: Everyone plays Action 1
+            actions_all_1 = [action1] * n_players
+            self.check_payoff_of_combo_dynamic(actions_all_1, game.payoff_matrix, agent_names, 0, language, is_penalty)
+            
+            # Test 2: Everyone plays Action 2
+            actions_all_2 = [action2] * n_players
+            self.check_payoff_of_combo_dynamic(actions_all_2, game.payoff_matrix, agent_names, 0, language, is_penalty)
+            
+            # Test 3: Mixed
+            if n_players >= 2:
+                actions_mixed = [action1] + [action2] * (n_players - 1)
+                self.check_payoff_of_combo_dynamic(actions_mixed, game.payoff_matrix, agent_names, 0, language, is_penalty)
+                self.check_payoff_of_combo_dynamic(actions_mixed, game.payoff_matrix, agent_names, 1, language, is_penalty)
 
-    def _check_payoff_bounds_generic(self, is_max: bool, payoff_matrix, question_idx: int) -> None:
-        """Measure max/min payoff from the matrix data."""
-        # Extract all payoff values from the matrix weights
-        # This is a heuristic: the max possible payoff for ANY player is in the weights?
-        # Actually need to check what THIS player can get.
-        # For symmetric games, global max/min in weights is likely sufficient.
+    def _check_payoff_bounds_generic_dynamic(self, check_highest: bool, payoff_matrix, agent_names, 
+                                             target_player_idx: int, language: str, is_penalty: bool) -> None:
+        """
+        Measure max/min payoff from the matrix data and ask LLM.
+        
+        Args:
+            check_highest: If True, asks for the "Highest" value. If False, "Lowest".
+            ...
+        """
         weights = payoff_matrix.weights.values()
         if not weights:
             return
             
-        target_val = max(weights) if is_max else min(weights)
+        max_val = max(weights)
+        min_val = min(weights)
         
-        if is_max:
-            correct_answer = str(target_val)
-            json_prompt = 'Remember to use the following JSON format: {"answer": <MAX_PAYOFF>}\n'
+        # Decision Logic:
+        # If is_penalty=True (minimization):
+        #   - "Highest penalty" -> max_val (Worst outcome)
+        #   - "Lowest penalty" -> min_val (Best outcome)
+        # If is_penalty=False (maximization):
+        #   - "Highest payoff" -> max_val (Best outcome)
+        #   - "Lowest payoff" -> min_val (Worst outcome)
+        
+        target_val = max_val if check_highest else min_val
+        
+        correct_answer = str(target_val)
+        
+        unit_key = "unit_penalty" if is_penalty else "unit_points"
+        unit = get_translation(language, unit_key)
+        
+        player_name = agent_names[target_player_idx]
+        
+        if check_highest:
+             # "What is the highest {unit} player {player} can get?"
+             question = get_translation(language, "rule_max_val", unit=unit, player=player_name)
+             label = "max_bound"
+             json_prompt = 'Remember to use the following JSON format: {"answer": <MAX_VAL>}\n'
         else:
-            correct_answer = str(target_val)
-            json_prompt = 'Remember to use the following JSON format: {"answer": <MIN_PAYOFF>}\n'
-            
-        question = self.questions[question_idx]
-        label = self.questions_labels[question_idx]
-        # Replace placeholders like {player_1_} with generic "you"? 
-        # The questions in __init__ are hardcoded with player_1_ ("A").
-        # If we are Player A, that's fine. If we are B, we should swap?
-        # The prompt context says "Player A and Player B...".
-        # If we are checking Player B, does the prompt say "You are Player B"? 
-        # No, the system prompt says "Player A and Player B...".
-        # And asks "What is the highest payoff player A can get?".
-        # This checks if the LLM understands the rules for Player A.
-        # Usually valid for symmetric games.
+             # "What is the lowest {unit} player {player} can get?"
+             question = get_translation(language, "rule_min_val", unit=unit, player=player_name)
+             label = "min_bound"
+             json_prompt = 'Remember to use the following JSON format: {"answer": <MIN_VAL>}\n'
+             
+        self.questions.append(question)
+        self.questions_labels.append(label)
+        if label not in self.questions_results:
+             self._init_question_result(label, question)
         
         question_prompt = f"Answer to the following question: {question}\n"
         prompt = generate_prompt_from_sub_prompts([self.system_prompt, json_prompt, question_prompt])
         llm_answer = find_first_int(self.get_answer_from_llm(prompt, label))
         self.check_answer(llm_answer, correct_answer, label)
+

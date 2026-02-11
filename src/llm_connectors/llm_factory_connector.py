@@ -16,6 +16,9 @@ MODEL_PROVIDER_MAP = {
     # vLLM models (requires VLLM_BASE_URL env var)
     "VLLMQwen": (VLLMConnector, "Qwen/Qwen2.5-32B-Instruct"),
     "VLLMQwen32B": (VLLMConnector, "Qwen/Qwen2.5-32B-Instruct"),
+    "VLLMLlama70B": (VLLMConnector, "meta-llama/Meta-Llama-3-70B-Instruct"),
+    "VLLMGptOss20B": (VLLMConnector, "gpt-oss-20b"),
+    "VLLMMistral7B": (VLLMConnector, "mistralai/Mistral-7B-Instruct-v0.2"), 
     "MockLLM": (MockConnector, "mock-model"),
     # Add more mappings as needed.
 }

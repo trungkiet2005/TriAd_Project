@@ -28,8 +28,8 @@ Output ONLY a valid JSON object with the following format:
   "beliefs": {{
     "opponent1_coop_prob": 50,  // probability (0-100) {opponent1} will choose '{strategy2}'
     "opponent2_coop_prob": 80,  // probability (0-100) {opponent2} will choose '{strategy2}'
-    "opponent1_noise_suspicion": 30,  // estimate (0-100): was {opponent1}'s LAST action noise (100) or strategic (0)? Noise rate: {opponentNoiseRate1}%
-    "opponent2_noise_suspicion": 10   // estimate (0-100): was {opponent2}'s LAST action noise (100) or strategic (0)? Noise rate: {opponentNoiseRate2}%
+    "opponent1_noise_suspicion": 30,  // estimate (0-100): was {opponent1}'s LAST action noise (100) or strategic (0)? Noise rate: {opponentNoiseRate1}% (Ignore for Round 1)
+    "opponent2_noise_suspicion": 10   // estimate (0-100): was {opponent2}'s LAST action noise (100) or strategic (0)? Noise rate: {opponentNoiseRate2}% (Ignore for Round 1)
   }},
   "reason": "brief explanation (1-2 sentences)"
 }}

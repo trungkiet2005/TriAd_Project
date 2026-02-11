@@ -46,6 +46,18 @@ class PayoffMatrix:
         dict: A mapping of combination keys to weight labels.
         """
         return self.matrix_data['matrix']
+
+    @property
+    def n_players(self) -> int:
+        """
+        int: The number of players in the game, inferred from the combinations.
+        """
+        combinations = self.matrix_data.get('combinations', {})
+        if not combinations:
+            return 2 # Default to 2 if no combinations defined (should not happen)
+        # Get the first combination key and check the length of its strategy list
+        first_key = next(iter(combinations))
+        return len(combinations[first_key])
     
     def get_weights_for_combination(self, strategy_list: List[str]) -> Tuple[int, ...]:
         """

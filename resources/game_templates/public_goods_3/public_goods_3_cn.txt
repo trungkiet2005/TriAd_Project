@@ -36,8 +36,8 @@
   "beliefs": {{
     "opponent1_contrib_prob": 50,  // 概率 (0-100) {opponent1} 将选择 '{strategy2}' (贡献)
     "opponent2_contrib_prob": 80,  // 概率 (0-100) {opponent2} 将选择 '{strategy2}' (贡献)
-    "opponent1_noise_suspicion": 20,  // 估计 (0-100)：{opponent1} 的最后行动是噪音 (100) 还是策略性 (0)？比率：{opponentNoiseRate1}%
-    "opponent2_noise_suspicion": 15   // 估计 (0-100)：{opponent2} 的最后行动是噪音 (100) 还是策略性 (0)？比率：{opponentNoiseRate2}%
+    "opponent1_noise_suspicion": 20,  // 估计 (0-100)：{opponent1} 的最后行动是噪音 (100) 还是策略性 (0)？比率：{opponentNoiseRate1}% (第1轮忽略)
+    "opponent2_noise_suspicion": 15   // 估计 (0-100)：{opponent2} 的最后行动是噪音 (100) 还是策略性 (0)？比率：{opponentNoiseRate2}% (第1轮忽略)
   }},
   "reason": "简要说明 (1-2句话)"
 }}

@@ -8,135 +8,107 @@ Provides prompt generation functions for hallucination checkers:
 """
 
 from typing import List, Dict, Any, Set
-
-
-# Player name constants
-PLAYER_NAMES = ["A", "B", "C", "D", "E"]
-player_1_ = PLAYER_NAMES[0]
-player_2_ = PLAYER_NAMES[1]
+from src.checkers.checker_translations import get_translation
 
 def to_nat_lang(text: str, string_of_string: bool = False) -> str:
     """Convert text to natural language format."""
     return str(text)
 
-def generate_game_rules_prompt(action_space: Set[str], payoff_matrix, n_iterations: int) -> str:
+def generate_game_rules_prompt(action_space: Set[str], payoff_matrix, n_iterations: int, 
+                              agent_names: List[str], language: str = "en", is_penalty: bool = False) -> str:
     """
     Generate game rules prompt with payoff information for N players.
+    
+    Args:
+        action_space: Set of available actions
+        payoff_matrix: PayoffMatrix object
+        n_iterations: Total rounds
+        agent_names: List of agent names
+        language: Language code ('en', 'vn', etc.)
+        is_penalty: If True, uses "penalty" logic (minimize); else "points" (maximize)
     """
     payoff_lines = []
     strategies = payoff_matrix.strategies
     combinations = payoff_matrix.matrix_data.get('combinations', {})
     matrix = payoff_matrix.matrix_data.get('matrix', {})
     weights = payoff_matrix.weights
-    n_players = payoff_matrix.n_players if hasattr(payoff_matrix, 'n_players') else 2
+    n_players = len(agent_names)
+    
+    unit_key = "unit_penalty" if is_penalty else "unit_points"
+    unit = get_translation(language, unit_key)
+    join_and = get_translation(language, "join_and")
+    join_comma = get_translation(language, "join_comma")
     
     # Generate intro line
-    players_str = " and ".join([f"player {PLAYER_NAMES[i]}" for i in range(n_players)])
-    action_list = ", ".join([f'"{a}"' for a in action_space])
+    players_str = join_and.join([f"player {name}" for name in agent_names])
+    action_list = join_comma.join([f'"{a}"' for a in action_space])
 
     # Generate payoff descriptions
     for combo_key, strategy_keys in combinations.items():
         if combo_key in matrix:
             # Describe actions
-            actions_desc = []
+            actions_desc_parts = []
             for i, strat_index in enumerate(strategy_keys):
                 action = strategies[strat_index]
-                actions_desc.append(f'player {PLAYER_NAMES[i]} plays "{action}"')
+                # "player {player} plays '{action}'"
+                part = get_translation(language, "condition_play", player=agent_names[i], action=action)
+                actions_desc_parts.append(part)
             
-            condition = " and ".join(actions_desc)
+            condition = join_and.join(actions_desc_parts)
             
             # Describe payoffs
             payoff_keys = matrix[combo_key]
-            payoffs_desc = []
+            payoffs_desc_parts = []
             for i, p_key in enumerate(payoff_keys):
                 val = weights[p_key]
-                payoffs_desc.append(f'player {PLAYER_NAMES[i]} collects {val} points')
+                # "player {player} collects {val} {unit}s" or "gets a {unit} of {val}"
+                desc_key = "payoff_description_penalty" if is_penalty else "payoff_description_points"
+                part = get_translation(language, desc_key, player=agent_names[i], value=val, unit=unit)
+                payoffs_desc_parts.append(part)
             
-            consequence = " and ".join(payoffs_desc)
+            consequence = join_and.join(payoffs_desc_parts)
             
             payoff_lines.append(f'If {condition}, {consequence}.')
     
-    payoff_prompt = "\n".join(payoff_lines)
+    payoff_prompt_str = "\n".join(payoff_lines)
+    
+    # Get translated context strings
+    context_intro = get_translation(language, "context_intro", players=players_str)
+    context_action = get_translation(language, "context_action", players=players_str, actions=action_list)
+    context_payoff_intro = get_translation(language, "context_payoff_intro", unit=unit)
+    context_rounds = get_translation(language, "context_rounds", n_rounds=n_iterations)
+    
+    obj_key = "context_objective_min" if is_penalty else "context_objective_max"
+    context_objective = get_translation(language, obj_key, unit=unit)
     
     game_rules_prompt = (
         f"<<SYS>>\n"
-        f"Context: {players_str} are playing a multi-round game.\n"
-        f"At each turn {players_str} simultaneously perform one of the following actions: {action_list}\n"
-        f"The payoffs for each combination of chosen actions are the following:\n"
-        f"{payoff_prompt}\n"
-        f"They will play a total of {n_iterations} rounds of this game.\n"
-        f"Remember that a player's objective is to get the highest possible amount of points in the long run.<<SYS>>\n"
+        f"Context: {context_intro}\n"
+        f"{context_action}\n"
+        f"{context_payoff_intro}\n"
+        f"{payoff_prompt_str}\n"
+        f"{context_rounds}\n"
+        f"{context_objective}<<SYS>>\n"
     )
     
     return game_rules_prompt
 
-
-
-def generate_history_prompt(own_history: List[str], opponents_histories: List[List[str]], 
-                           payoff_function, window_size: int = None, is_ended: bool = False,
-                           player_index: int = 0) -> str:
-    """
-    Generate history prompt for 2 players (legacy support).
-    """
-    n_rounds_played = len(own_history)
-    if n_rounds_played == 0:
-        return "This is the first round of the game.\n"
-        
-    if window_size is None:
-        window_size = n_rounds_played
-        
-    start = max(0, n_rounds_played - window_size)
-    end = n_rounds_played
-    
-    history_parts = [f"The history of the game in the last {min(n_rounds_played, window_size)} rounds is the following:\n"]
-    
-    # Determine which history belongs to A and B
-    # Default assumption: player_index 0 is A, 1 is B
-    hist_A = own_history if player_index == 0 else opponents_histories # Note: arg is named 'opponents_histories' in signature but passed as single list in TimeChecker?
-    # Wait, the signature in file was: opponents_histories: List[List[str]]
-    # But TimeChecker passes: opponent_history: List[str]
-    # I need to fix the type hint/handling or just assume input is what TimeChecker passes.
-    # TimeChecker passes `opponent_history` (list of strings).
-    # So I will treat `opponents_histories` as `List[str]` (single opponent) for this legacy function.
-    
-    hist_A = own_history if player_index == 0 else opponents_histories
-    hist_B = opponents_histories if player_index == 0 else own_history
-    
-    for r in range(start, end):
-        action_A = hist_A[r]
-        action_B = hist_B[r]
-        
-        # Calculate scores if possible using payoff_function
-        # payoff_function(own, opp)
-        # score_A = payoff_function(action_A, action_B) if player_index == 0 else payoff_function(action_B, action_A) -- wait, payoff_function perspective?
-        # Let's skip scores in history string if not strictly required, or try:
-        
-        # prompt usually: "Round X: player A played Y, player B played Z."
-        line = f'Round {r + 1}: player {player_1_} played "{action_A}" and player {player_2_} played "{action_B}".'
-        history_parts.append(line)
-        
-    if not is_ended:
-        history_parts.append(f"\nCurrent round: {n_rounds_played + 1}.")
-    else:
-        history_parts.append("\nThe game has ended.")
-        
-    return "\n".join(history_parts) + "\n"
-
 def generate_history_prompt_generic(all_histories: List[List[str]], player_index: int,
-                                   payoff_matrix, window_size: int = None, is_ended: bool = False) -> str:
+                                   payoff_matrix, agent_names: List[str], 
+                                   window_size: int = None, is_ended: bool = False,
+                                   language: str = "en", is_penalty: bool = False) -> str:
     """
     Generate history prompt for N players.
-    
-    Args:
-        all_histories: List of histories for all players [A, B, C...]
-        player_index: Index of the current player (0=A, 1=B, etc.)
-        payoff_matrix: PayoffMatrix object to calculate scores
     """
     n_players = len(all_histories)
     if n_players == 0 or len(all_histories[0]) == 0:
-        return "This is the first round of the game.\n"
+        return "This is the first round of the game.\n" # TODO: Translate this too?
         
     n_rounds_played = len(all_histories[0])
+    
+    unit_key = "unit_penalty" if is_penalty else "unit_points"
+    unit = get_translation(language, unit_key)
+    join_and = get_translation(language, "join_and")
     
     if window_size is None:
         window_size = n_rounds_played
@@ -144,58 +116,48 @@ def generate_history_prompt_generic(all_histories: List[List[str]], player_index
     start = max(0, n_rounds_played - window_size)
     end = n_rounds_played
     
-    my_name = PLAYER_NAMES[player_index]
-    
-    # Calculate totals logic (simplified for N players)
-    # We can skip complex "total cooperates" text if it's too verbose for N players, 
-    # or loop through everyone.
-    
-    history_parts = [f"The history of the game in the last {min(n_rounds_played, window_size)} rounds is the following:\n"]
-    
-    total_scores = [0] * n_players
+    history_parts = []
+    intro = get_translation(language, "history_intro", window=min(n_rounds_played, window_size))
+    history_parts.append(intro + "\n")
     
     for r in range(start, end):
         # Get actions for this round
         round_actions = [h[r] for h in all_histories]
         
         # Calculate scores using payoff matrix
-        # payoff_matrix.get_payoff_for_actions(actions_list) -> needs to be implemented or we use get_score equivalent
-        # PayoffMatrix usually takes "ActionA", "ActionB"...
-        # We need to map actions to strategy keys for PayoffMatrix?
-        # Or PayoffMatrix.get_score works with strategy names?
-        # get_score(own, opp) -> usually 2 players.
-        # For N players, we likely have a method get_payoff(p1_action, p2_action, p3_action...)
+        actions_desc_parts = []
+        scores_desc_parts = []
         
-        # Assuming we can calculate scores. 
-        # For now, let's assume we can get scores.
-        # If payoff_matrix doesn't support direct list access, we might struggle.
-        # But wait, PayoffMatrix has `get_payoff_by_actions(action_list)`?
-        # Let's assume we construct the score description.
-        
-        scores = []
-        # We need a way to get scores.
-        # The prompt generation usually happens inside the game where we might have the scores cached?
-        # But this is external checker.
-        
-        # Temp fallback: calculate if 2 players, else placeholder or try to use matrix.
-        # Actually, let's try to get scores from the matrix if possible.
-        pass
-
-    # Simplified implementation that focuses on ACTIONS first
-    history_parts = [f"The history of the game in the last {min(n_rounds_played, window_size)} rounds is the following:\n"]
-    
-    for r in range(start, end):
-        actions_desc = []
+        # Actions description
         for i in range(n_players):
-            actions_desc.append(f'player {PLAYER_NAMES[i]} played "{all_histories[i][r]}"')
+            # "player {player} played \"{action}\""
+            part = get_translation(language, "history_action", player=agent_names[i], action=all_histories[i][r])
+            actions_desc_parts.append(part)
+            
+        try:
+            weights = payoff_matrix.get_weights_for_combination(round_actions)
+            for i in range(n_players):
+                if i < len(weights):
+                    # Score description
+                    key = "history_score_penalty" if is_penalty else "history_score_points"
+                    part = get_translation(language, key, player=agent_names[i], value=weights[i], unit=unit)
+                    scores_desc_parts.append(part)
+        except Exception:
+            pass # Skip scores if calc fails
+
+        actions_str = join_and.join(actions_desc_parts)
+        scores_str = join_and.join(scores_desc_parts) if scores_desc_parts else ""
         
-        line = f"Round {r + 1}: " + " and ".join(actions_desc) + "."
+        # "Round {r}: {actions}. {scores}."
+        line = get_translation(language, "history_round", round=r+1, actions_desc=actions_str, scores_desc=scores_str)
         history_parts.append(line)
         
     if not is_ended:
-        history_parts.append(f"\nCurrent round: {n_rounds_played + 1}.")
+        current = get_translation(language, "history_current_round", round=n_rounds_played + 1)
+        history_parts.append(f"\n{current}")
     else:
-        history_parts.append("\nThe game has ended.")
+        ended = get_translation(language, "history_ended")
+        history_parts.append(f"\n{ended}")
         
     return "\n".join(history_parts) + "\n"
 
@@ -203,15 +165,12 @@ def generate_history_prompt_generic(all_histories: List[List[str]], player_index
 def generate_prompt_from_sub_prompts(sub_prompts: List[str], zero_shot: bool = False) -> str:
     """
     Combine sub-prompts into instruction format.
-    
-    Args:
-        sub_prompts: List of prompt parts to combine
-        zero_shot: Whether to add chain-of-thought prompt
-        
-    Returns:
-        str: Combined prompt in instruction format
     """
     # Stronger instruction to force JSON
+    # TODO: Translate "IMPORTANT: Provide your response..." if strictly needed, 
+    # but instructions to model are usually fine in English unless model is weak in EN.
+    # VLLMQwen usually understands English instructions well even for other languages.
+    # Leaving in English for safety/consistency of JSON format, unless user requests otherwise.
     instruction = "IMPORTANT: Provide your response ONLY in JSON format. Do not include any explanations, markdown formatting, or other text outside the JSON object."
     
     prompt = "<s>[INST] " + "".join(sub_prompts) + f"\n{instruction}\n[/INST]\n"

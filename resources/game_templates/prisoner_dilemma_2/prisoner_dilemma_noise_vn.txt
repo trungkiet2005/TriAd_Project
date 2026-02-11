@@ -22,8 +22,8 @@ CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau:
 {{
   "action": "lựa chọn của bạn ({strategy1} hoặc {strategy2})",
   "beliefs": {{
-    "opponent_coop_prob": 70,  // xác suất (0-100) {opponent1} sẽ chọn '{strategy2}'
-    "opponent_noise_suspicion": 25  // ước tính (0-100): hành động TRƯỚC ĐÓ là nhiễu (100) hay chiến lược (0)? Cân nhắc tỷ lệ nhiễu ({opponentNoiseRate}%), lịch sử hành vi
+    "opponent_coop_prob": 50,  // xác suất (0-100) {opponent1} sẽ chọn '{strategy2}'
+    "opponent_noise_suspicion": 50  // ước tính (0-100): hành động TRƯỚC ĐÓ là nhiễu (100) hay chiến lược (0)? Cân nhắc tỷ lệ nhiễu ({opponentNoiseRate}%), lịch sử hành vi (Bỏ qua cho Vòng 1)
   }},
   "reason": "giải thích ngắn gọn (1-2 câu)"
 }}

@@ -196,7 +196,8 @@ class NoiseFairGameFactory:
             config.get('stopGameWhen', []),
             config.get('agentsCommunicate', False),
             checkers=game_checkers,
-            checker_every_n_rounds=checker_every_n_rounds
+            checker_every_n_rounds=checker_every_n_rounds,
+            is_penalty=config.get('isPenalty', True)
         )
 
     def _upload_output(self, game, game_history, game_n):
@@ -220,13 +221,14 @@ class NoiseFairGameFactory:
         """Convert noise rate to folder name format noiseXX.
         
         Examples:
-            0.0  -> noise00
-            0.1  -> noise01
-            0.5  -> noise05
-            1.0  -> noise10
+            0.0   -> noise00
+            0.05  -> noise05
+            0.1   -> noise10
+            0.5   -> noise50
+            1.0   -> noise100
         """
-        # Convert to index (0.0 -> 00, 0.1 -> 01, ..., 1.0 -> 10)
-        noise_idx = int(round(noise_rate * 10))
+        # Convert to percentage integer (0.0 -> 00, 0.05 -> 05, 0.2 -> 20, 1.0 -> 100)
+        noise_idx = int(round(noise_rate * 100))
         return f"noise{noise_idx:02d}"
 
     def create_games(self, config):

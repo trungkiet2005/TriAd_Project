@@ -36,8 +36,8 @@ Produci SOLO un oggetto JSON valido con il seguente formato:
   "beliefs": {{
     "opponent1_contrib_prob": 50,  // probabilità (0-100) che {opponent1} scelga '{strategy2}' (Contribuire)
     "opponent2_contrib_prob": 80,  // probabilità (0-100) che {opponent2} scelga '{strategy2}' (Contribuire)
-    "opponent1_noise_suspicion": 20,  // stima (0-100): la ULTIMA azione di {opponent1} era rumore (100) o strategica (0)? Tasso: {opponentNoiseRate1}%
-    "opponent2_noise_suspicion": 15   // stima (0-100): la ULTIMA azione di {opponent2} era rumore (100) o strategica (0)? Tasso: {opponentNoiseRate2}%
+    "opponent1_noise_suspicion": 20,  // stima (0-100): la ULTIMA azione di {opponent1} era rumore (100) o strategica (0)? Tasso: {opponentNoiseRate1}% (Ignora per il turno 1)
+    "opponent2_noise_suspicion": 15   // stima (0-100): la ULTIMA azione di {opponent2} era rumore (100) o strategica (0)? Tasso: {opponentNoiseRate2}% (Ignora per il turno 1)
   }},
   "reason": "breve spiegazione (1-2 frasi)"
 }}

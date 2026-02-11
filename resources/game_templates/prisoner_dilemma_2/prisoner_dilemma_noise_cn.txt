@@ -22,8 +22,8 @@
 {{
   "action": "你的选择 ({strategy1} 或 {strategy2})",
   "beliefs": {{
-    "opponent_coop_prob": 70,  // 概率 (0-100) {opponent1} 将选择 '{strategy2}'
-    "opponent_noise_suspicion": 25  // 估计 (0-100)：其最后行动是噪音 (100) 还是策略性 (0)？噪音率：{opponentNoiseRate}%
+    "opponent_coop_prob": 50,  // 概率 (0-100) {opponent1} 将选择 '{strategy2}'
+    "opponent_noise_suspicion": 50  // 估计 (0-100)：其最后行动是噪音 (100) 还是策略性 (0)？噪音率：{opponentNoiseRate}% (第1轮忽略)
   }},
   "reason": "简要说明 (1-2句话)"
 }}

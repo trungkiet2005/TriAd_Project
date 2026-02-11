@@ -36,8 +36,8 @@ CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau:
   "beliefs": {{
     "opponent1_contrib_prob": 50,  // xác suất (0-100) {opponent1} sẽ chọn '{strategy2}' (Đóng góp)
     "opponent2_contrib_prob": 80,  // xác suất (0-100) {opponent2} sẽ chọn '{strategy2}' (Đóng góp)
-    "opponent1_noise_suspicion": 20,  // ước tính (0-100): hành động TRƯỚC ĐÓ của {opponent1} là nhiễu (100) hay chiến lược (0)? Tỷ lệ nhiễu: {opponentNoiseRate1}%
-    "opponent2_noise_suspicion": 15   // ước tính (0-100): hành động TRƯỚC ĐÓ của {opponent2} là nhiễu (100) hay chiến lược (0)? Tỷ lệ nhiễu: {opponentNoiseRate2}%
+    "opponent1_noise_suspicion": 20,  // ước tính (0-100): hành động TRƯỚC ĐÓ của {opponent1} là nhiễu (100) hay chiến lược (0)? Tỷ lệ nhiễu: {opponentNoiseRate1}% (Bỏ qua cho Vòng 1)
+    "opponent2_noise_suspicion": 15   // ước tính (0-100): hành động TRƯỚC ĐÓ của {opponent2} là nhiễu (100) hay chiến lược (0)? Tỷ lệ nhiễu: {opponentNoiseRate2}% (Bỏ qua cho Vòng 1)
   }},
   "reason": "giải thích ngắn gọn (1-2 câu)"
 }}

@@ -75,10 +75,10 @@ class NoiseAgent(Agent):
 
     def _flip_strategy(self, strategy_key: str, payoff_matrix) -> str:
         """
-        Flip a strategy to its opposite.
+        Flip a strategy to a different one.
         
-        In a 2-strategy game (like Prisoner's Dilemma), this swaps
-        strategy1 <-> strategy2.
+        Selects a random strategy from the available options, excluding
+        the currently selected strategy.
 
         Args:
             strategy_key (str): The current strategy key.
@@ -89,14 +89,15 @@ class NoiseAgent(Agent):
         """
         strategy_keys = list(payoff_matrix.strategies.keys())
         
-        if len(strategy_keys) != 2:
-            raise ValueError(f"Noise flip only supports 2-strategy games, got {len(strategy_keys)}")
+        if len(strategy_keys) < 2:
+            # Cannot flip if there's only 0 or 1 strategy
+            return strategy_key
+            
+        # Filter out the current strategy
+        available_flips = [k for k in strategy_keys if k != strategy_key]
         
-        # Return the other strategy
-        if strategy_key == strategy_keys[0]:
-            return strategy_keys[1]
-        else:
-            return strategy_keys[0]
+        # Pick a random alternative
+        return random.choice(available_flips)
 
     def record_noise_event(self, original_key: str, final_key: str, was_flipped: bool, payoff_matrix) -> None:
         """

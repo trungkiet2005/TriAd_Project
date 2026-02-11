@@ -22,8 +22,8 @@ Restituisci SOLO un oggetto JSON valido nel seguente formato:
 {{
   "action": "la tua scelta ({strategy1} o {strategy2})",
   "beliefs": {{
-    "opponent_coop_prob": 70,  // probabilità (0-100) che {opponent1} scelga '{strategy2}'
-    "opponent_noise_suspicion": 25  // stima (0-100): la sua ULTIMA azione era rumore (100) o strategica (0)? Tasso di rumore: {opponentNoiseRate}%
+    "opponent_coop_prob": 50,  // probabilità (0-100) che {opponent1} scelga '{strategy2}'
+    "opponent_noise_suspicion": 50  // stima (0-100): la sua ULTIMA azione era rumore (100) o strategica (0)? Tasso di rumore: {opponentNoiseRate}% (Ignora per il turno 1)
   }},
   "reason": "breve spiegazione (1-2 frasi)"
 }}

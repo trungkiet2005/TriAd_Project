@@ -23,7 +23,8 @@ class NoiseFairGame(FairGame):
 
     def __init__(self, name, language, agents, n_rounds, n_rounds_known,
                  payoff_matrix_data, prompt_template, stop_conditions,
-                 agents_communicate, checkers=None, checker_every_n_rounds: int = 1):
+                 agents_communicate, checkers=None, checker_every_n_rounds: int = 1,
+                 is_penalty: bool = True):
         """
         Initialize the NoiseFairGame.
 
@@ -34,7 +35,7 @@ class NoiseFairGame(FairGame):
         super().__init__(
             name, language, agents, n_rounds, n_rounds_known,
             payoff_matrix_data, prompt_template, stop_conditions,
-            agents_communicate
+            agents_communicate, is_penalty=is_penalty
         )
         self.checkers = checkers or []
         self.checker_results = {}
