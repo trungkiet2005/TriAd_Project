@@ -201,8 +201,8 @@ def find_first_substring(text: str, substrings: Set[str]) -> str:
 
 def find_json_object(text: str) -> Dict[str, Any]:
     """
-    Find and parse a JSON object in text.
-    Handles markdown code blocks and loose formatting.
+    Find and parse a JSON object in text using brace counting.
+    Handles nested JSON and markdown code blocks.
     """
     import json
     import re
@@ -213,44 +213,54 @@ def find_json_object(text: str) -> Dict[str, Any]:
     text = str(text).strip()
     
     # Remove markdown code blocks if present
-    # Matches ```json ... ``` or just ``` ... ```
     match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
     if match:
         text = match.group(1)
-        
+
+    # First try: parse the whole text if it looks like JSON
     try:
-        # First try: parse the whole text if it looks like JSON
         if text.startswith('{') and text.endswith('}'):
             return json.loads(text)
     except json.JSONDecodeError:
         pass
 
+    # Robust brace counting method (from agent.py)
+    start_json = False
+    json_end = False
+    match_count = 0
+    probably_json_parsable = ""
+    
+    for char in text:
+        if not start_json and char == "{":
+            start_json = True
+        if start_json and not json_end:
+            probably_json_parsable += char
+            if char == "{":
+                match_count += 1
+            if char == "}" and match_count > 0:
+                match_count -= 1
+                if match_count == 0:
+                    json_end = True
+                    # Stop after finding the first complete outer JSON object
+                    # This prevents grabbing trailing text which breaks json.loads
+                    break
+    
+    if json_end:
+        try:
+            return json.loads(probably_json_parsable)
+        except json.JSONDecodeError:
+            # Try replacing single quotes with double quotes as fallback
+            try:
+                fixed = probably_json_parsable.replace("'", '"')
+                return json.loads(fixed)
+            except json.JSONDecodeError:
+                pass
+                
+    # Fallback to simple regex if brace counting fails (e.g. malformed braces)
     try:
-        # Second try: Assertive regex to find the outermost JSON object
-        # This regex looks for { followed by anything (non-greedy) and ending with }
-        # re.DOTALL allows matching across newlines
         match = re.search(r'\{.*\}', text, re.DOTALL)
         if match:
-            json_str = match.group()
-            return json.loads(json_str)
-    except json.JSONDecodeError:
-        pass
-        
-    try:
-        # Third try: Find the LAST occurrence of a JSON-like structure
-        # (Common in CoT where the answer is at the end)
-        matches = list(re.finditer(r'\{[^{}]*\}', text))
-        if matches:
-            return json.loads(matches[-1].group())
-    except json.JSONDecodeError:
-        pass
-        
-    # Final cleanup attempt: replace standard quotes
-    try:
-        clean_text = text.replace("'", '"')
-        match = re.search(r'\{.*\}', clean_text, re.DOTALL)
-        if match:
-             return json.loads(match.group())
+            return json.loads(match.group())
     except Exception:
         pass
 

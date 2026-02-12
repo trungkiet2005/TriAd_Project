@@ -137,7 +137,13 @@ class Agent:
         else:
             try:
                 action_str = answer.get("action", "")
+                action_str = answer.get("action", "")
                 reason = answer.get("reason", "")
+                
+                # Print beliefs for debugging
+                beliefs = answer.get("beliefs")
+                if beliefs:
+                    print(f"[{self.name}] Beliefs: {beliefs}")
                 
                 # Normalize action string
                 action_norm = str(action_str).lower().strip()
