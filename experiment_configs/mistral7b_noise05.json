@@ -3,6 +3,7 @@
   "nRounds": 30,
   "nRoundsIsKnown": true,
   "llm": "VLLMMistral7B",
+  "MODEL_NAME": "mistralai/Mistral-7B-Instruct-v0.2",
   "llmDisplayName": "Mistral-7B-Instruct-v0.2",
   "languages": [
     "en",

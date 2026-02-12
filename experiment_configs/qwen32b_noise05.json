@@ -3,6 +3,7 @@
   "nRounds": 30,
   "nRoundsIsKnown": true,
   "llm": "VLLMQwen32B",
+  "MODEL_NAME": "Qwen/Qwen2.5-32B-Instruct",
   "llmDisplayName": "Qwen2.5-32B-Instruct",
   "languages": [
     "en",

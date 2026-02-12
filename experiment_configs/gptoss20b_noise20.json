@@ -3,6 +3,7 @@
   "nRounds": 30,
   "nRoundsIsKnown": true,
   "llm": "VLLMGptOss20B",
+  "MODEL_NAME": "gpt-oss-20b",
   "llmDisplayName": "gpt-oss-20b",
   "languages": [
     "en",
