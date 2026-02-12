@@ -25,7 +25,7 @@ load_dotenv()
 
 # String 'http://localhost:8000/v1' or 'https://api.openai.com/v1'
 # Ensure these are set correctly for your environment
-os.environ["VLLM_BASE_URL"] = "https://1888-34-172-165-37.ngrok-free.app"
+os.environ["VLLM_BASE_URL"] = "http://localhost:8000/v1"
 os.environ["VLLM_API_KEY"] = "EMPTY" 
 
 # ==========================================
