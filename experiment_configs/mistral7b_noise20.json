@@ -1,10 +1,10 @@
 {
-  "name": "PD Noise Mistral-7B-Instruct-v0.2 Noise 0.2",
+  "name": "PD Noise Mistral-7B-Instruct-v0.3 Noise 0.2",
   "nRounds": 30,
   "nRoundsIsKnown": true,
   "llm": "VLLMMistral7B",
-  "MODEL_NAME": "mistralai/Mistral-7B-Instruct-v0.2",
-  "llmDisplayName": "Mistral-7B-Instruct-v0.2",
+  "MODEL_NAME": "mistralai/Mistral-7B-Instruct-v0.3",
+  "llmDisplayName": "Mistral-7B-Instruct-v0.3",
   "languages": [
     "en",
     "fr",
