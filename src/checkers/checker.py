@@ -124,19 +124,36 @@ class Checker:
         
         self.questions_results[label][self.prompt_str].append(prompt)
         
-        # Use the LLM connector directly
-        try:
-            generated_text = self.llm_connector.send_prompt(prompt, max_tokens=max_new_tokens)
-        except TypeError:
-            # Fallback if connector doesn't support max_tokens
-            generated_text = self.llm_connector.send_prompt(prompt)
+        # Retry loop
+        max_retries = 3
+        generated_text = ""
+        json_object = None
         
-        self.questions_results[label][self.generated_text_str].append(generated_text)
+        for attempt in range(max_retries):
+            # Use the LLM connector directly
+            try:
+                generated_text = self.llm_connector.send_prompt(prompt, max_tokens=max_new_tokens)
+            except TypeError:
+                # Fallback if connector doesn't support max_tokens
+                generated_text = self.llm_connector.send_prompt(prompt)
+            
+            self.questions_results[label][self.generated_text_str].append(generated_text)
+            
+            # Try to parse JSON from response
+            json_object = find_json_object(generated_text)
+            
+            if json_object is not None:
+                break
+                
+            # If failed, print warning and retry
+            preview = str(generated_text)[:100] if generated_text else "None"
+            if attempt < max_retries - 1:
+                print(f"[Checker:{self.name}] WARNING: No JSON found (Attempt {attempt+1}/{max_retries}). Retrying...")
         
-        # Try to parse JSON from response
-        json_object = find_json_object(generated_text)
         if json_object is not None:
             try:
+                # Print full JSON for debugging
+                print(f"[Checker:{self.name}] JSON Response: {json.dumps(json_object, ensure_ascii=False)}")
                 answer = json_object.get("answer", generated_text)
             except Exception as e:
                 warnings.warn(f"Error {str(e)}. No key 'answer' in JSON: {json_object}. Returning entire generated text.")

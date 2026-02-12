@@ -113,17 +113,35 @@ class Agent:
         Returns:
             str: The strategy name extracted from LLM response.
         """
-        # Get raw LLM response
-        generated_text = execute_prompt(self.llm_service, prompt)
+        # Retry loop for LLM call and JSON parsing
+        max_retries = 3
+        answer = None
+        generated_text = ""
         
+        for attempt in range(max_retries):
+            # Get raw LLM response
+            generated_text = execute_prompt(self.llm_service, prompt)
+            
+            # Parse JSON from response
+            answer = find_json_object(generated_text)
+            
+            if answer is not None:
+                # Found valid JSON, break retry loop
+                break
+            
+            # If failed, print warning and retry if attempts remain
+            preview = str(generated_text)[:100] if generated_text else "None"
+            if attempt < max_retries - 1:
+                print(f"[{self.name}] WARNING: No JSON found in response (Attempt {attempt+1}/{max_retries}). Retrying...")
+            else:
+                # Final failure warning
+                warnings.warn(f"No JSON found in: {preview}... Using default.")
+
         # Build action_answer record (matches original paper format)
         action_answer = {
             "prompt": prompt,
             "generated_text": generated_text,
         }
-        
-        # Parse JSON from response
-        answer = find_json_object(generated_text)
         
         # Determine strategy from response
         chosen_strategy_key = 'strategy1' # Default fallback
@@ -131,12 +149,12 @@ class Agent:
 
         if answer is None:
             # No JSON found - try to extract action directly from text
-            preview = str(generated_text)[:100] if generated_text else "None"
-            warnings.warn(f"No JSON found in: {preview}... Using default.")
             chosen_strategy_key = self._extract_action_from_text(generated_text)
         else:
             try:
-                action_str = answer.get("action", "")
+                # Print full JSON for debugging as requested
+                print(f"[{self.name}] JSON Response: {json.dumps(answer, ensure_ascii=False)}")
+                
                 action_str = answer.get("action", "")
                 reason = answer.get("reason", "")
                 
