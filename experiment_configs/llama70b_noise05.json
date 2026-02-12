@@ -3,7 +3,7 @@
   "nRounds": 30,
   "nRoundsIsKnown": true,
   "llm": "VLLMLlama70B",
-  "MODEL_NAME": "meta-llama/Meta-Llama-3-70B-Instruct",
+  "MODEL_NAME": "casperhansen/llama-3-70b-instruct-awq",
   "llmDisplayName": "Llama3-70B-Instruct",
   "languages": [
     "en",
