@@ -22,14 +22,25 @@
 التاريخ: {history}.
 {historyNote}: [ملاحظة: الأفعال الموضحة في التاريخ هي أفعال نهائية بعد تطبيق الضوضاء.]
 اختر بين {strategy1} و {strategy2}.
-أخرج فقط كائن JSON صالح بالتنسيق التالي:
+أخرج فقط كائن JSON صالح بالتنسيق التالي.
+
+وصف الحقول:
+- "action": اختيارك ({strategy1} أو {strategy2})
+- "beliefs":
+    - "opponent1_coop_prob": احتمال (0-100) أن {opponent1} سيختار '{strategy2}'
+    - "opponent2_coop_prob": احتمال (0-100) أن {opponent2} سيختار '{strategy2}'
+    - "opponent1_noise_suspicion": تقدير (0-100): هل كان فعل {opponent1} الأخير ضوضاء (100) أم استراتيجي (0)؟ خذ بعين الاعتبار معدل الضوضاء ({opponentNoiseRate1}%) والتاريخ. تجاهل للجولة 1.
+    - "opponent2_noise_suspicion": تقدير (0-100): هل كان فعل {opponent2} الأخير ضوضاء (100) أم استراتيجي (0)؟ خذ بعين الاعتبار معدل الضوضاء ({opponentNoiseRate2}%) والتاريخ. تجاهل للجولة 1.
+- "reason": شرح موجز (جملة أو جملتان)
+
+مثال JSON:
 {{
-  "action": "اختيارك ({strategy1} أو {strategy2})",
+  "action": "{strategy1}",
   "beliefs": {{
-    "opponent1_coop_prob": 50,  // احتمال (0-100) أن {opponent1} سيختار '{strategy2}'
-    "opponent2_coop_prob": 80,  // احتمال (0-100) أن {opponent2} سيختار '{strategy2}'
-    "opponent1_noise_suspicion": 30,  // تقدير (0-100): هل كان فعل {opponent1} الأخير ضوضاء (100) أم استراتيجي (0)؟ المعدل: {opponentNoiseRate1}% (تجاهل للجولة 1)
-    "opponent2_noise_suspicion": 10   // تقدير (0-100): هل كان فعل {opponent2} الأخير ضوضاء (100) أم استراتيجي (0)؟ المعدل: {opponentNoiseRate2}% (تجاهل للجولة 1)
+    "opponent1_coop_prob": 50,
+    "opponent2_coop_prob": 50,
+    "opponent1_noise_suspicion": 30,
+    "opponent2_noise_suspicion": 10
   }},
-  "reason": "شرح موجز (جملة أو جملتان)"
+  "reason": "الشرح هنا"
 }}

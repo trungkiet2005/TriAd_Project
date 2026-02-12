@@ -1,0 +1,156 @@
+{
+  "name": "PD3 Noise Qwen2.5-32B-Instruct Noise 0.2",
+  "nRounds": 30,
+  "nRoundsIsKnown": true,
+  "llm": "VLLMQwen32B",
+  "MODEL_NAME": "Qwen/Qwen2.5-32B-Instruct",
+  "llmDisplayName": "Qwen2.5-32B-Instruct",
+  "languages": [
+    "en",
+    "vn"
+  ],
+  "allAgentPermutations": true,
+  "templateFilename": "prisoner_dilemma_3/prisoner_dilemma_3_noise",
+  "noiseConfig": {
+    "agent1NoiseRate": 0.2,
+    "agent2NoiseRate": 0.2,
+    "agent3NoiseRate": 0.2
+  },
+  "enableHallucinationChecks": true,
+  "checkers": [
+    "time",
+    "rule",
+    "aggregation"
+  ],
+  "checkerEveryNRounds": 5,
+  "agents": {
+    "names": [
+      "agent1",
+      "agent2",
+      "agent3"
+    ],
+    "personalities": {
+      "en": [
+        "cooperative",
+        "selfish",
+        "mixed"
+      ],
+      "vn": [
+        "hợp tác",
+        "ích kỷ",
+        "hỗn hợp"
+      ]
+    },
+    "opponentPersonalityProb": [
+      0
+    ]
+  },
+  "payoffMatrix": {
+    "weights": {
+      "weight_P": 8,
+      "weight_T1": 4,
+      "weight_T2": 0,
+      "weight_S0": 10,
+      "weight_S1": 5,
+      "weight_R": 2
+    },
+    "strategies": {
+      "en": {
+        "strategy1": "Defect",
+        "strategy2": "Cooperate"
+      },
+      "vn": {
+        "strategy1": "Phản bội",
+        "strategy2": "Hợp tác"
+      }
+    },
+    "combinations": {
+      "DDD": [
+        "strategy1",
+        "strategy1",
+        "strategy1"
+      ],
+      "DDC": [
+        "strategy1",
+        "strategy1",
+        "strategy2"
+      ],
+      "DCD": [
+        "strategy1",
+        "strategy2",
+        "strategy1"
+      ],
+      "DCC": [
+        "strategy1",
+        "strategy2",
+        "strategy2"
+      ],
+      "CDD": [
+        "strategy2",
+        "strategy1",
+        "strategy1"
+      ],
+      "CDC": [
+        "strategy2",
+        "strategy1",
+        "strategy2"
+      ],
+      "CCD": [
+        "strategy2",
+        "strategy2",
+        "strategy1"
+      ],
+      "CCC": [
+        "strategy2",
+        "strategy2",
+        "strategy2"
+      ]
+    },
+    "matrix": {
+      "DDD": [
+        "weight_P",
+        "weight_P",
+        "weight_P"
+      ],
+      "DDC": [
+        "weight_P",
+        "weight_P",
+        "weight_S0"
+      ],
+      "DCD": [
+        "weight_P",
+        "weight_S0",
+        "weight_P"
+      ],
+      "DCC": [
+        "weight_T1",
+        "weight_S1",
+        "weight_S1"
+      ],
+      "CDD": [
+        "weight_S0",
+        "weight_P",
+        "weight_P"
+      ],
+      "CDC": [
+        "weight_S1",
+        "weight_T1",
+        "weight_S1"
+      ],
+      "CCD": [
+        "weight_S1",
+        "weight_S1",
+        "weight_T1"
+      ],
+      "CCC": [
+        "weight_R",
+        "weight_R",
+        "weight_R"
+      ]
+    }
+  },
+  "stopGameWhen": [],
+  "agentsCommunicate": false,
+  "repeats": 5,
+  "isPenalty": true
+}

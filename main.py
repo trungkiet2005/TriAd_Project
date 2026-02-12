@@ -72,7 +72,7 @@ def main():
             return
 
         # Find all JSON config files
-        config_files = list(config_dir.glob("*.json"))
+        config_files = list(config_dir.rglob("*.json"))
         if not config_files:
             print(f"No .json files found in {config_dir}")
             return
