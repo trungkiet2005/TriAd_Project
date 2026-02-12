@@ -17,8 +17,8 @@ MODEL_PROVIDER_MAP = {
     "VLLMQwen": (VLLMConnector, "Qwen/Qwen2.5-32B-Instruct"),
     "VLLMQwen32B": (VLLMConnector, "Qwen/Qwen2.5-32B-Instruct"),
     "VLLMLlama70B": (VLLMConnector, "casperhansen/llama-3-70b-instruct-awq"),
-    "VLLMGptOss20B": (VLLMConnector, "gpt-oss-20b"),
-    "VLLMMistral7B": (VLLMConnector, "mistralai/Mistral-7B-Instruct-v0.2"), 
+    "VLLMGptOss20B": (VLLMConnector, "openai/gpt-oss-20b"),
+    "VLLMMistral7B": (VLLMConnector, "mistralai/Mistral-7B-Instruct-v0.3"), 
     "MockLLM": (MockConnector, "mock-model"),
     # Add more mappings as needed.
 }
