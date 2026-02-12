@@ -34,7 +34,7 @@ os.environ["VLLM_API_KEY"] = "EMPTY"
 # Set this to the path of the config file you want to run.
 # If set, this takes precedence over command line arguments and auto-discovery.
 # Example: "experiment_configs/llama70b_noise00.json"
-CONFIG_FILE_PATH = "experiment_configs/test.json"  # <--- EDIT THIS LINE
+CONFIG_FILE_PATH = None  # <--- Set to None to use command line args or auto-discovery
 
 
 def main():
