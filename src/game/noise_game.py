@@ -86,7 +86,7 @@ class NoiseFairGame(FairGame):
                     checker.ask_checker_questions(
                         game=self,
                         player_name=agent_name,
-                        history_window_size=5  # Last 5 rounds for context
+                        history_window_size=None  # Full history for better context
                     )
                 except Exception as e:
                     print(f"Checker {checker.name} error for {agent_name}: {e}")

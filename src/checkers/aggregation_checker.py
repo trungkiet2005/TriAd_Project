@@ -90,7 +90,7 @@ class AggregationChecker(Checker):
         
         history_prompt = generate_history_prompt_generic(
             all_histories, player_idx, game.payoff_matrix, agent_names,
-            window_size=history_window_size, is_ended=is_ended,
+            window_size=None, is_ended=is_ended,  # Aggregation needs full history
             language=language, is_penalty=is_penalty
         )
         self.system_prompt = game_rules_prompt + history_prompt
