@@ -28,24 +28,56 @@ load_dotenv()
 os.environ["VLLM_BASE_URL"] = "https://1888-34-172-165-37.ngrok-free.app"
 os.environ["VLLM_API_KEY"] = "EMPTY" 
 
+# ==========================================
+#        MANUAL CONFIGURATION
+# ==========================================
+# Set this to the path of the config file you want to run.
+# If set, this takes precedence over command line arguments and auto-discovery.
+# Example: "experiment_configs/llama70b_noise00.json"
+CONFIG_FILE_PATH = "experiment_configs/test.json"  # <--- EDIT THIS LINE
+
 
 def main():
     print(f"--- Starting Experiment Runner ---")
     
-    # Locate experiment_configs directory
-    config_dir = Path(__file__).parent / "experiment_configs"
-    if not config_dir.exists():
-        print(f"Error: Config directory not found: {config_dir}")
-        print("Please run generate_configs.py first.")
-        return
+    # Determine which config(s) to run
+    config_files = []
+    
+    # 1. Check Manual Config Variable
+    if CONFIG_FILE_PATH:
+        path = Path(CONFIG_FILE_PATH)
+        if path.exists():
+            config_files = [path]
+            print(f"Running manual config defined in script: {path.name}")
+        else:
+            print(f"Error: Manual config file not found: {path} (Check CONFIG_FILE_PATH)")
+            return
+            
+    # 2. Check Command Line Argument (if no manual config set)
+    elif len(sys.argv) > 1:
+        config_path = Path(sys.argv[1])
+        if not config_path.exists():
+            print(f"Error: Config file not found: {config_path}")
+            return
+        config_files = [config_path]
+        print(f"Running single config from argument: {config_path.name}")
+        
+    # 3. Default: Run All Files in experiment_configs
+    else:
+        # Locate experiment_configs directory
+        config_dir = Path(__file__).parent / "experiment_configs"
+        if not config_dir.exists():
+            print(f"Error: Config directory not found: {config_dir}")
+            print("Please run generate_configs.py first.")
+            return
 
-    # Find all JSON config files
-    config_files = list(config_dir.glob("*.json"))
-    if not config_files:
-        print(f"No .json files found in {config_dir}")
-        return
-
-    print(f"Found {len(config_files)} config files in {config_dir}")
+        # Find all JSON config files
+        config_files = list(config_dir.glob("*.json"))
+        if not config_files:
+            print(f"No .json files found in {config_dir}")
+            return
+        
+        print(f"No config file specified. Running ALL {len(config_files)} files in {config_dir}")
 
     # Initialize checkers (these are stateless or reset per game in factory)
     checkers = [TimeChecker(), RuleChecker(), AggregationChecker()]
