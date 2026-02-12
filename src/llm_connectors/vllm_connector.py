@@ -54,7 +54,7 @@ class VLLMConnector(AbstractConnector):
             base_url=self.base_url
         )
 
-    def send_prompt(self, prompt: str, max_tokens: int = 256) -> str:
+    def send_prompt(self, prompt: str, max_tokens: int = 1024) -> str:
         """
         Send a prompt to the vLLM server and return the response.
         
