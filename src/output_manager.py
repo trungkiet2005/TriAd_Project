@@ -453,16 +453,18 @@ class DetailedOutputManager:
         storing stringified strategy lists.
         """
         agents_list = list(game.agents.items())
-        agent1_name, agent1 = agents_list[0] if len(agents_list) > 0 else ("", None)
-        agent2_name, agent2 = agents_list[1] if len(agents_list) > 1 else ("", None)
-
+        
         # strategy2 is typically Cooperate in the payoff matrix config
         cooperate_name = game.payoff_matrix.strategies.get('strategy2', 'Cooperate')
 
         def _agent_summary(agent, agent_name):
             if agent is None:
                 return {}
-            n_rounds = len(agent.strategies)
+            n_rounds = len(game.choices_made) if hasattr(game, 'choices_made') else 0
+            # Use actual strategies history length if available
+            if hasattr(agent, 'strategies'):
+                 n_rounds = len(agent.strategies)
+
             coop_count = agent.strategies.count(cooperate_name)
             defect_count = n_rounds - coop_count
             flipped = sum(agent.noise_events) if hasattr(agent, 'noise_events') else 0
@@ -493,17 +495,6 @@ class DetailedOutputManager:
                 "intended_strategies": intended_str,
             }
 
-        a1 = _agent_summary(agent1, agent1_name)
-        a2 = _agent_summary(agent2, agent2_name)
-
-        # Checker accuracies
-        checker_acc = {}
-        if hasattr(game, 'checkers') and game.checkers:
-            for checker in game.checkers:
-                checker_acc[f"{checker.name}_accuracy"] = round(
-                    getattr(checker, 'sample_mean', 0), 4
-                )
-
         row = {
             "game_id": f"game_{game_idx}",
             "run_id": run_id,
@@ -512,33 +503,21 @@ class DetailedOutputManager:
             "n_rounds_known": getattr(game, 'n_rounds_known', True),
             "max_rounds": getattr(game, 'n_rounds', 0),
             "played_rounds": len(game.choices_made) if hasattr(game, 'choices_made') else 0,
-            # Agent 1
-            "agent1_name": a1.get("name", ""),
-            "agent1_llm": a1.get("llm", ""),
-            "agent1_personality": a1.get("personality", ""),
-            "agent1_noise_rate": a1.get("noise_rate", 0),
-            "agent1_total_score": a1.get("total_score", 0),
-            "agent1_cooperation_rate": a1.get("cooperation_rate", 0),
-            "agent1_defection_rate": a1.get("defection_rate", 0),
-            "agent1_flipped_count": a1.get("flipped_count", 0),
-            "agent1_flipped_rounds": a1.get("flipped_rounds", ""),
-            "agent1_strategies": a1.get("strategies", ""),
-            "agent1_intended_strategies": a1.get("intended_strategies", ""),
-            # Agent 2
-            "agent2_name": a2.get("name", ""),
-            "agent2_llm": a2.get("llm", ""),
-            "agent2_personality": a2.get("personality", ""),
-            "agent2_noise_rate": a2.get("noise_rate", 0),
-            "agent2_total_score": a2.get("total_score", 0),
-            "agent2_cooperation_rate": a2.get("cooperation_rate", 0),
-            "agent2_defection_rate": a2.get("defection_rate", 0),
-            "agent2_flipped_count": a2.get("flipped_count", 0),
-            "agent2_flipped_rounds": a2.get("flipped_rounds", ""),
-            "agent2_strategies": a2.get("strategies", ""),
-            "agent2_intended_strategies": a2.get("intended_strategies", ""),
-            # Checkers
-            **checker_acc,
         }
+
+        # Dynamically add agent columns
+        for i, (name, agent) in enumerate(agents_list):
+            agent_idx = i + 1
+            summary = _agent_summary(agent, name)
+            for key, val in summary.items():
+                row[f"agent{agent_idx}_{key}"] = val
+
+        # Checker accuracies
+        if hasattr(game, 'checkers') and game.checkers:
+            for checker in game.checkers:
+                row[f"{checker.name}_accuracy"] = round(
+                    getattr(checker, 'sample_mean', 0), 4
+                )
 
         self.games_summary_rows.append(row)
 
@@ -552,12 +531,11 @@ class DetailedOutputManager:
 
         for round_idx in range(n_played):
             for agent_name, agent in agents_list:
-                # Find opponent
-                opponent = None
+                # Find opponents (multiple)
+                opponents = []
                 for oname, oagent in agents_list:
                     if oname != agent_name:
-                        opponent = oagent
-                        break
+                        opponents.append(oagent)
 
                 # Intended strategy (before noise)
                 intended = (agent.original_strategies[round_idx]
@@ -582,14 +560,20 @@ class DetailedOutputManager:
                 # Cumulative score
                 cumulative = sum(agent.scores[:round_idx + 1]) if agent.scores else 0
 
-                # Opponent strategies
-                opp_final = (opponent.strategies[round_idx]
-                            if opponent and round_idx < len(opponent.strategies)
-                            else "")
-                opp_intended = (opponent.original_strategies[round_idx]
-                               if opponent and hasattr(opponent, 'original_strategies')
-                               and round_idx < len(opponent.original_strategies)
-                               else "")
+                # Opponent strategies (comma separated)
+                opp_finals = []
+                opp_intendeds = []
+                
+                for opponent in opponents:
+                    s_final = (opponent.strategies[round_idx]
+                              if opponent and round_idx < len(opponent.strategies)
+                              else "")
+                    s_intended = (opponent.original_strategies[round_idx]
+                                 if opponent and hasattr(opponent, 'original_strategies')
+                                 and round_idx < len(opponent.original_strategies)
+                                 else "")
+                    opp_finals.append(s_final)
+                    opp_intendeds.append(s_intended)
 
                 # Reason from LLM response
                 reason = ""
@@ -609,8 +593,8 @@ class DetailedOutputManager:
                     "was_flipped": was_flipped,
                     "score": score,
                     "cumulative_score": cumulative,
-                    "opponent_final_strategy": opp_final,
-                    "opponent_intended_strategy": opp_intended,
+                    "opponent_final_strategy": ",".join(opp_finals),
+                    "opponent_intended_strategy": ",".join(opp_intendeds),
                     "reason": str(reason)[:500],
                 }
 
@@ -658,29 +642,46 @@ class DetailedOutputManager:
             return
 
         filename = self.base_dir / "games_summary.csv"
+        
+        # Determine max agents from data to build dynamic headers
+        max_agents = 0
+        for row in self.games_summary_rows:
+            # check keys like agent3_name
+            for k in row.keys():
+                if k.startswith("agent") and "_name" in k:
+                    try:
+                        idx = int(k.split("_")[0].replace("agent", ""))
+                        max_agents = max(max_agents, idx)
+                    except ValueError:
+                        pass
+        
+        # Fallback if no data yet (shouldn't happen if rows exist)
+        if max_agents == 0: 
+            max_agents = 2
+
         fieldnames = [
             "game_id", "run_id", "timestamp", "language", "n_rounds_known",
-            "max_rounds", "played_rounds",
-            "agent1_name", "agent1_llm", "agent1_personality", "agent1_noise_rate",
-            "agent1_total_score", "agent1_cooperation_rate", "agent1_defection_rate",
-            "agent1_flipped_count", "agent1_flipped_rounds", "agent1_strategies", "agent1_intended_strategies",
-            "agent2_name", "agent2_llm", "agent2_personality", "agent2_noise_rate",
-            "agent2_total_score", "agent2_cooperation_rate", "agent2_defection_rate",
-            "agent2_flipped_count", "agent2_flipped_rounds", "agent2_strategies", "agent2_intended_strategies",
+            "max_rounds", "played_rounds"
+        ]
+        
+        # Add per-agent columns
+        for i in range(1, max_agents + 1):
+            prefix = f"agent{i}"
+            fieldnames.extend([
+                f"{prefix}_name", f"{prefix}_llm", f"{prefix}_personality", f"{prefix}_noise_rate",
+                f"{prefix}_total_score", f"{prefix}_cooperation_rate", f"{prefix}_defection_rate",
+                f"{prefix}_flipped_count", f"{prefix}_flipped_rounds", f"{prefix}_strategies", f"{prefix}_intended_strategies"
+            ])
+            
+        fieldnames.extend([
             "time_checker_accuracy", "rule_checker_accuracy",
             "aggregation_checker_accuracy",
-        ]
+        ])
 
         with open(filename, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
             writer.writeheader()
             for row in self.games_summary_rows:
-                row.setdefault("agent1_strategies", "")
-                row.setdefault("agent1_intended_strategies", "")
-                row.setdefault("agent1_flipped_rounds", "")
-                row.setdefault("agent2_strategies", "")
-                row.setdefault("agent2_intended_strategies", "")
-                row.setdefault("agent2_flipped_rounds", "")
                 writer.writerow(row)
 
         print(f"[CSV] games_summary.csv saved to: {filename}")
