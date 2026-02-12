@@ -1,10 +1,10 @@
 {
-  "name": "TEST - mistralai/Mistral-7B Noise 0.0",
+  "name": "TEST - openai/gpt-oss-20b Noise 0.2",
   "nRounds": 3,
   "nRoundsIsKnown": true,
-  "llm": "VLLMMistral7B",
-  "MODEL_NAME": "mistralai/Mistral-7B-Instruct-v0.3",
-  "llmDisplayName": "mistralai/Mistral-7B-Instruct-v0.3",
+  "llm": "VLLMGptOss20B",
+  "MODEL_NAME": "openai/gpt-oss-20b",
+  "llmDisplayName": "openai/gpt-oss-20b",
   "languages": [
     "en",
     "fr",
@@ -16,8 +16,8 @@
   "allAgentPermutations": true,
   "templateFilename": "prisoner_dilemma_2/prisoner_dilemma_noise",
   "noiseConfig": {
-    "agent1NoiseRate": 0.0,
-    "agent2NoiseRate": 0.0
+    "agent1NoiseRate": 0.2,
+    "agent2NoiseRate": 0.2
   },
   "enableHallucinationChecks": true,
   "checkers": [
