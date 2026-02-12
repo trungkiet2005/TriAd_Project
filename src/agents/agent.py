@@ -131,7 +131,8 @@ class Agent:
 
         if answer is None:
             # No JSON found - try to extract action directly from text
-            warnings.warn(f"No JSON found in: {generated_text[:100]}... Using default.")
+            preview = str(generated_text)[:100] if generated_text else "None"
+            warnings.warn(f"No JSON found in: {preview}... Using default.")
             chosen_strategy_key = self._extract_action_from_text(generated_text)
         else:
             try:

@@ -142,8 +142,9 @@ class Checker:
                 warnings.warn(f"Error {str(e)}. No key 'answer' in JSON: {json_object}. Returning entire generated text.")
                 answer = generated_text
         else:
-            warnings.warn(f"Could not find a valid JSON object in the generated text: {generated_text[:100]}...")
-            answer = generated_text
+            preview = str(generated_text)[:100] if generated_text else "None"
+            warnings.warn(f"Could not find a valid JSON object in the generated text: {preview}...")
+            answer = generated_text if generated_text else ""
         
         if need_str:
             answer = str(answer)

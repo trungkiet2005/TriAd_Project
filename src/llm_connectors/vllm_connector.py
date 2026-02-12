@@ -74,7 +74,7 @@ class VLLMConnector(AbstractConnector):
                 max_tokens=max_tokens,
                 messages=messages
             )
-            return completion.choices[0].message.content
+            return completion.choices[0].message.content or ""
         except Exception as e:
             print(f"Error calling vLLM server: {e}")
             raise
