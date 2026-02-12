@@ -1,0 +1,93 @@
+{
+    "name": "TEST - openai/gpt-oss-20b Noise 0.0",
+    "nRounds": 3,
+    "nRoundsIsKnown": true,
+    "llm": "VLLMGptOss20B",
+    "MODEL_NAME": "openai/gpt-oss-20b",
+    "llmDisplayName": "openai/gpt-oss-20b",
+    "languages": [
+        "en"
+    ],
+    "allAgentPermutations": false,
+    "templateFilename": "prisoner_dilemma_2/prisoner_dilemma_noise",
+    "noiseConfig": {
+        "agent1NoiseRate": 0.0,
+        "agent2NoiseRate": 0.0
+    },
+    "enableHallucinationChecks": true,
+    "checkers": [
+        "time",
+        "rule",
+        "aggregation"
+    ],
+    "checkerEveryNRounds": 10,
+    "agents": {
+        "names": [
+            "agent1",
+            "agent2"
+        ],
+        "personalities": {
+            "en": [
+                "cooperative",
+                "selfish"
+            ]
+        },
+        "opponentPersonalityProb": [
+            0
+        ]
+    },
+    "payoffMatrix": {
+        "weights": {
+            "weight1": 8,
+            "weight2": 10,
+            "weight3": 0,
+            "weight4": 2
+        },
+        "strategies": {
+            "en": {
+                "strategy1": "Defect",
+                "strategy2": "Cooperate"
+            }
+        },
+        "combinations": {
+            "combination1": [
+                "strategy1",
+                "strategy1"
+            ],
+            "combination2": [
+                "strategy1",
+                "strategy2"
+            ],
+            "combination3": [
+                "strategy2",
+                "strategy1"
+            ],
+            "combination4": [
+                "strategy2",
+                "strategy2"
+            ]
+        },
+        "matrix": {
+            "combination1": [
+                "weight1",
+                "weight1"
+            ],
+            "combination2": [
+                "weight3",
+                "weight2"
+            ],
+            "combination3": [
+                "weight2",
+                "weight3"
+            ],
+            "combination4": [
+                "weight4",
+                "weight4"
+            ]
+        }
+    },
+    "stopGameWhen": [],
+    "agentsCommunicate": false,
+    "repeats": 1,
+    "isPenalty": true
+}

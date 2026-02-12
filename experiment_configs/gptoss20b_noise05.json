@@ -1,10 +1,10 @@
 {
-  "name": "PD Noise gpt-oss-20b Noise 0.05",
+  "name": "PD Noise openai/gpt-oss-20b Noise 0.05",
   "nRounds": 30,
   "nRoundsIsKnown": true,
   "llm": "VLLMGptOss20B",
-  "MODEL_NAME": "gpt-oss-20b",
-  "llmDisplayName": "gpt-oss-20b",
+  "MODEL_NAME": "openai/gpt-oss-20b",
+  "llmDisplayName": "openai/gpt-oss-20b",
   "languages": [
     "en",
     "fr",
