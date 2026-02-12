@@ -18,12 +18,21 @@ Your goal is to minimize your penalty by making the best strategies based on the
 This is the history of the choices made so far: {history}.
 {historyNote}: [Note: The actions shown in history are FINAL actions after noise was applied, not necessarily the intended actions.]
 Choose between {strategy1} and {strategy2}.
-Output ONLY a valid JSON object with the following format:
+Output ONLY a valid JSON object with the following format.
+
+Fields description:
+- "action": your choice ({strategy1} or {strategy2})
+- "beliefs":
+    - "opponent_coop_prob": probability (0-100) that {opponent1} will choose '{strategy2}'
+    - "opponent_noise_suspicion": estimate (0-100) of whether their LAST action was noise (100) or strategic (0). Consider noise rate ({opponentNoiseRate}%) and behavior history. Ignore for Round 1.
+- "reason": brief explanation (1-2 sentences)
+
+JSON Example:
 {{
-  "action": "your choice ({strategy1} or {strategy2})",
+  "action": "{strategy1}",
   "beliefs": {{
-    "opponent_coop_prob": 50,  // probability (0-100) {opponent1} will choose '{strategy2}'
-    "opponent_noise_suspicion": 50  // estimate (0-100): was their LAST action noise (100) or strategic (0)? Consider noise rate ({opponentNoiseRate}%), behavior history (Ignore for Round 1)
+    "opponent_coop_prob": 50,
+    "opponent_noise_suspicion": 50
   }},
-  "reason": "brief explanation (1-2 sentences)"
+  "reason": "explanation here"
 }}

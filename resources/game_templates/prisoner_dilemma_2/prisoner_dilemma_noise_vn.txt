@@ -18,12 +18,21 @@ Mục tiêu của bạn là giảm thiểu hình phạt bằng cách đưa ra ch
 Đây là lịch sử các lựa chọn đã được thực hiện: {history}.
 {historyNote}: [Lưu ý: Các hành động hiển thị trong lịch sử là hành động CUỐI CÙNG sau khi áp dụng nhiễu, không nhất thiết là hành động dự định.]
 Chọn giữa {strategy1} và {strategy2}.
-CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau:
+CHỈ xuất ra một đối tượng JSON hợp lệ theo định dạng sau.
+
+Mô tả các trường:
+- "action": lựa chọn của bạn ({strategy1} hoặc {strategy2})
+- "beliefs":
+    - "opponent_coop_prob": xác suất (0-100) {opponent1} sẽ chọn '{strategy2}'
+    - "opponent_noise_suspicion": ước tính (0-100) xem hành động TRƯỚC ĐÓ là nhiễu (100) hay chiến lược (0). Cân nhắc tỷ lệ nhiễu ({opponentNoiseRate}%) và lịch sử. Bỏ qua cho Vòng 1.
+- "reason": giải thích ngắn gọn (1-2 câu)
+
+Ví dụ JSON:
 {{
-  "action": "lựa chọn của bạn ({strategy1} hoặc {strategy2})",
+  "action": "{strategy1}",
   "beliefs": {{
-    "opponent_coop_prob": 50,  // xác suất (0-100) {opponent1} sẽ chọn '{strategy2}'
-    "opponent_noise_suspicion": 50  // ước tính (0-100): hành động TRƯỚC ĐÓ là nhiễu (100) hay chiến lược (0)? Cân nhắc tỷ lệ nhiễu ({opponentNoiseRate}%), lịch sử hành vi (Bỏ qua cho Vòng 1)
+    "opponent_coop_prob": 50,
+    "opponent_noise_suspicion": 50
   }},
-  "reason": "giải thích ngắn gọn (1-2 câu)"
+  "reason": "giải thích tại đây"
 }}
