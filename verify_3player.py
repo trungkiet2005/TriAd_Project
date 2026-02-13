@@ -51,7 +51,7 @@ def verify_3player_execution():
         "payoffMatrix": {
             "weights": {
                 "weight_P": 8, "weight_T1": 4, "weight_T2": 0,
-                "weight_S0": 10, "weight_S1": 5, "weight_R": 2
+                "weight_S0": 10, "weight_S1": 6, "weight_R": 2
             },
             "strategies": {
                 "en": {"strategy1": "Defect", "strategy2": "Cooperate"}
@@ -68,12 +68,12 @@ def verify_3player_execution():
             },
             "matrix": {
                 "DDD": ["weight_P", "weight_P", "weight_P"],
-                "DDC": ["weight_P", "weight_P", "weight_S0"],
-                "DCD": ["weight_P", "weight_S0", "weight_P"],
-                "DCC": ["weight_T1", "weight_S1", "weight_S1"],
-                "CDD": ["weight_S0", "weight_P", "weight_P"],
-                "CDC": ["weight_S1", "weight_T1", "weight_S1"],
-                "CCD": ["weight_S1", "weight_S1", "weight_T1"],
+                "DDC": ["weight_T1", "weight_T1", "weight_S0"],
+                "DCD": ["weight_T1", "weight_S0", "weight_T1"],
+                "DCC": ["weight_T2", "weight_S1", "weight_S1"],
+                "CDD": ["weight_S0", "weight_T1", "weight_T1"],
+                "CDC": ["weight_S1", "weight_T2", "weight_S1"],
+                "CCD": ["weight_S1", "weight_S1", "weight_T2"],
                 "CCC": ["weight_R", "weight_R", "weight_R"]
             }
         },

@@ -25,3 +25,6 @@ resources/results/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+analysis_outputs/
+test_verify_results/

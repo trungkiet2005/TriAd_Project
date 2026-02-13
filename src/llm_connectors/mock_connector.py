@@ -20,7 +20,17 @@ class MockConnector(AbstractConnector):
         
         Returns a random action in JSON format.
         """
-        action = random.choice(["Cooperate", "Defect"])
-        beliefs = {"opponent1_prob": random.randint(0, 100), "opponent2_prob": random.randint(0, 100)}
-        response = {"action": action, "beliefs": beliefs}
+        action = random.choice(["strategy1", "strategy2"])
+        # Generate beliefs for up to 2 opponents (covers 2 and 3 player games)
+        beliefs = {
+            "opponent_coop_prob": random.randint(0, 100),
+            "opponent_noise_suspicion": random.randint(0, 100),
+            "opponent1_prob": random.randint(0, 100), # For completeness if needed
+            "opponent2_prob": random.randint(0, 100)
+        }
+        response = {
+            "action": action, 
+            "beliefs": beliefs,
+            "reason": "Mock reason for action."
+        }
         return json.dumps(response)
