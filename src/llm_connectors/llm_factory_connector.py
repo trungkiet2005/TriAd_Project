@@ -16,6 +16,7 @@ MODEL_PROVIDER_MAP = {
     # vLLM models (requires VLLM_BASE_URL env var)
     "VLLMQwen": (VLLMConnector, "Qwen/Qwen2.5-32B-Instruct"),
     "VLLMQwen32B": (VLLMConnector, "Qwen/Qwen2.5-32B-Instruct"),
+    "VLLMQwen14B": (VLLMConnector, "Qwen/Qwen2.5-14B-Instruct"),
     "VLLMLlama70B": (VLLMConnector, "casperhansen/llama-3-70b-instruct-awq"),
     "VLLMGptOss20B": (VLLMConnector, "openai/gpt-oss-20b"),
     "VLLMMistral7B": (VLLMConnector, "mistralai/Mistral-7B-Instruct-v0.3"), 

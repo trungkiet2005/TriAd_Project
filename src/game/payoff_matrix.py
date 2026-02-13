@@ -123,19 +123,26 @@ class PayoffMatrix:
             agent_weight = weight_keys.pop(0)
             agent.add_score(self.weights[agent_weight])
 
-    def get_score(self, own_action: str, opponent_action: str) -> int:
+    def get_score(self, own_action: str, *opponent_actions: str) -> int:
         """
-        Get the score for a player given both players' actions (by strategy name).
+        Get the score for a player given all players' actions (by strategy name).
         
         Args:
             own_action (str): The player's action (e.g., "Cooperate")
-            opponent_action (str): The opponent's action (e.g., "Defect")
+            *opponent_actions (str): The opponents' actions (e.g., "Defect", "Cooperate")
             
         Returns:
             int: The player's payoff for this action combination.
         """
         try:
-            weights = self.get_weights_for_combination([own_action, opponent_action])
+            # Combine own action with all opponent actions
+            # Note: This assumes the order matters and matches the combination definition order
+            # The own_action is assumed to be the first one in the check list? 
+            # Actually, get_weights_for_combination expects the full list of strategies for ALL players.
+            # Ideally this method shouldn't presume 'own' vs 'opponent' order without knowing player index.
+            # But for 2-player, it was [own, opponent]. 
+            # For 3-player, it should be [own, op1, op2] if we correspond to player 1.
+            weights = self.get_weights_for_combination([own_action] + list(opponent_actions))
             return weights[0]  # First weight is for the first player (own)
         except ValueError:
             # Try reverse lookup for alternate name formats or return 0 if failed

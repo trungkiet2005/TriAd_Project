@@ -72,7 +72,7 @@ def main():
             return
 
         # Find all JSON config files
-        config_files = list(config_dir.glob("*.json"))
+        config_files = list(config_dir.rglob("*.json"))
         if not config_files:
             print(f"No .json files found in {config_dir}")
             return
@@ -94,7 +94,8 @@ def main():
             # Create Factory
             factory = NoiseFairGameFactory(
                 checkers=checkers,
-                llm_name=llm_name
+                llm_name=llm_name,
+                max_workers=16
             )
 
             print(f"Running games for {llm_name}...")
@@ -109,6 +110,16 @@ def main():
             traceback.print_exc()
 
     print("\n--- All Experiments Complete ---")
+    
+    # Run 3-Player Analysis
+    try:
+        import run_3player_analysis
+        print("\n--- Starting Automatic Analysis ---")
+        run_3player_analysis.main()
+    except ImportError:
+        print("Analysis script not found (run_3player_analysis.py). Skipping.")
+    except Exception as e:
+        print(f"Error running analysis: {e}")
 
 if __name__ == "__main__":
     main()

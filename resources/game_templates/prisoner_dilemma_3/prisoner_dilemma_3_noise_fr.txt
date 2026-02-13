@@ -22,14 +22,25 @@ Votre objectif est de minimiser votre pénalité.
 Historique : {history}.
 {historyNote}: [Note : Les actions affichées dans l'historique sont les actions FINALES après application du bruit.]
 Choisissez entre {strategy1} et {strategy2}.
-Produisez UNIQUEMENT un objet JSON valide avec le format suivant :
+Produisez UNIQUEMENT un objet JSON valide avec le format suivant.
+
+Description des champs :
+- "action": votre choix ({strategy1} ou {strategy2})
+- "beliefs":
+    - "opponent1_coop_prob": probabilité (0-100) que {opponent1} choisisse '{strategy2}'
+    - "opponent2_coop_prob": probabilité (0-100) que {opponent2} choisisse '{strategy2}'
+    - "opponent1_noise_suspicion": estimation (0-100) : son DERNIER acte était-il du bruit (100) ou stratégique (0) ? Tenez compte du taux de bruit ({opponentNoiseRate1}%) et de l'historique. Ignorer pour le tour 1.
+    - "opponent2_noise_suspicion": estimation (0-100) : son DERNIER acte était-il du bruit (100) ou stratégique (0) ? Tenez compte du taux de bruit ({opponentNoiseRate2}%) et de l'historique. Ignorer pour le tour 1.
+- "reason": brève explication (1-2 phrases)
+
+Exemple JSON :
 {{
-  "action": "votre choix ({strategy1} ou {strategy2})",
+  "action": "{strategy1}",
   "beliefs": {{
-    "opponent1_coop_prob": 50,  // probabilité (0-100) que {opponent1} choisisse '{strategy2}'
-    "opponent2_coop_prob": 80,  // probabilité (0-100) que {opponent2} choisisse '{strategy2}'
-    "opponent1_noise_suspicion": 30,  // estimation (0-100) : son DERNIER acte était-il du bruit (100) ou stratégique (0) ? Taux : {opponentNoiseRate1}% (Ignorer pour le tour 1)
-    "opponent2_noise_suspicion": 10   // estimation (0-100) : son DERNIER acte était-il du bruit (100) ou stratégique (0) ? Taux : {opponentNoiseRate2}% (Ignorer pour le tour 1)
+    "opponent1_coop_prob": 50,
+    "opponent2_coop_prob": 50,
+    "opponent1_noise_suspicion": 30,
+    "opponent2_noise_suspicion": 10
   }},
-  "reason": "brève explication (1-2 phrases)"
+  "reason": "explication ici"
 }}

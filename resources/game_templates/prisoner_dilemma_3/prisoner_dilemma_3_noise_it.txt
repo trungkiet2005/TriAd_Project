@@ -22,14 +22,25 @@ Il tuo obiettivo è minimizzare la tua penalità.
 Storia: {history}.
 {historyNote}: [Nota: Le azioni mostrate nella storia sono azioni FINALI dopo l'applicazione del rumore.]
 Scegli tra {strategy1} e {strategy2}.
-Restituisci SOLO un oggetto JSON valido con il seguente formato:
+Restituisci SOLO un oggetto JSON valido con il seguente formato.
+
+Descrizione dei campi:
+- "action": la tua scelta ({strategy1} o {strategy2})
+- "beliefs":
+    - "opponent1_coop_prob": probabilità (0-100) che {opponent1} scelga '{strategy2}'
+    - "opponent2_coop_prob": probabilità (0-100) che {opponent2} scelga '{strategy2}'
+    - "opponent1_noise_suspicion": stima (0-100): la ULTIMA azione di {opponent1} era rumore (100) o strategica (0)? Considera il tasso di rumore ({opponentNoiseRate1}%) e la storia. Ignora per il turno 1.
+    - "opponent2_noise_suspicion": stima (0-100): la ULTIMA azione di {opponent2} era rumore (100) o strategica (0)? Considera il tasso di rumore ({opponentNoiseRate2}%) e la storia. Ignora per il turno 1.
+- "reason": breve spiegazione (1-2 frasi)
+
+Esempio JSON:
 {{
-  "action": "la tua scelta ({strategy1} o {strategy2})",
+  "action": "{strategy1}",
   "beliefs": {{
-    "opponent1_coop_prob": 50,  // probabilità (0-100) che {opponent1} scelga '{strategy2}'
-    "opponent2_coop_prob": 80,  // probabilità (0-100) che {opponent2} scelga '{strategy2}'
-    "opponent1_noise_suspicion": 30,  // stima (0-100): la ULTIMA azione di {opponent1} era rumore (100) o strategica (0)? Tasso: {opponentNoiseRate1}% (Ignora per il turno 1)
-    "opponent2_noise_suspicion": 10   // stima (0-100): la ULTIMA azione di {opponent2} era rumore (100) o strategica (0)? Tasso: {opponentNoiseRate2}% (Ignora per il turno 1)
+    "opponent1_coop_prob": 50,
+    "opponent2_coop_prob": 50,
+    "opponent1_noise_suspicion": 30,
+    "opponent2_noise_suspicion": 10
   }},
-  "reason": "breve spiegazione (1-2 frasi)"
+  "reason": "spiegazione qui"
 }}
