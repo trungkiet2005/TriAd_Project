@@ -125,7 +125,7 @@ class Checker:
         self.questions_results[label][self.prompt_str].append(prompt)
         
         # Retry loop
-        max_retries = 5
+        max_retries = 1
         generated_text = ""
         json_object = None
         

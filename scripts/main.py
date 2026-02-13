@@ -88,8 +88,8 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         '--max-workers',
         type=int,
-        default=4,
-        help="Maximum number of parallel game threads (default: 4)"
+        default=16,
+        help="Maximum number of parallel game threads (default: 16)"
     )
     
     return parser.parse_args()
