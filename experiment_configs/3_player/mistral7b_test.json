@@ -2,9 +2,9 @@
     "name": "PD3 Noise openai/gpt-oss-20b Noise 0.0",
     "nRounds": 30,
     "nRoundsIsKnown": true,
-    "llm": "VLLMGptOss20B",
+    "llm": "VLLMMistral7B",
     "MODEL_NAME": "mistralai/Mistral-7B-Instruct-v0.3",
-    "llmDisplayName": "openai/gpt-oss-20b",
+    "llmDisplayName": "mistralai/Mistral-7B-Instruct-v0.3",
     "languages": [
         "en",
         "vn"
@@ -51,7 +51,7 @@
             "weight_T1": 4,
             "weight_T2": 0,
             "weight_S0": 10,
-            "weight_S1": 5,
+            "weight_S1": 6,
             "weight_R": 2
         },
         "strategies": {
@@ -113,34 +113,34 @@
                 "weight_P"
             ],
             "DDC": [
-                "weight_P",
-                "weight_P",
+                "weight_T1",
+                "weight_T1",
                 "weight_S0"
             ],
             "DCD": [
-                "weight_P",
+                "weight_T1",
                 "weight_S0",
-                "weight_P"
+                "weight_T1"
             ],
             "DCC": [
-                "weight_T1",
+                "weight_T2",
                 "weight_S1",
                 "weight_S1"
             ],
             "CDD": [
                 "weight_S0",
-                "weight_P",
-                "weight_P"
+                "weight_T1",
+                "weight_T1"
             ],
             "CDC": [
                 "weight_S1",
-                "weight_T1",
+                "weight_T2",
                 "weight_S1"
             ],
             "CCD": [
                 "weight_S1",
                 "weight_S1",
-                "weight_T1"
+                "weight_T2"
             ],
             "CCC": [
                 "weight_R",
