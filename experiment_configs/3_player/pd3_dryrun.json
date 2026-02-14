@@ -1,15 +1,14 @@
 {
-    "name": "PD3 Noise Qwen2.5-32B-Instruct Noise 0.05",
-    "nRounds": 30,
+    "name": "PD3 Dry Run",
+    "nRounds": 2,
     "nRoundsIsKnown": true,
-    "llm": "VLLMQwen32B",
-    "MODEL_NAME": "Qwen/Qwen1.5-32B-Chat",
-    "llmDisplayName": "Qwen/Qwen1.5-32B-Chat",
+    "llm": "MockLLM",
+    "MODEL_NAME": "mock-model",
+    "llmDisplayName": "Mock Model",
     "languages": [
-        "en",
-        "vn"
+        "en"
     ],
-    "allAgentPermutations": true,
+    "allAgentPermutations": false,
     "templateFilename": "prisoner_dilemma_3/prisoner_dilemma_3_noise",
     "noiseConfig": {
         "agent1NoiseRate": 0.05,
@@ -19,10 +18,9 @@
     "enableHallucinationChecks": true,
     "checkers": [
         "time",
-        "rule",
-        "aggregation"
+        "rule"
     ],
-    "checkerEveryNRounds": 5,
+    "checkerEveryNRounds": 1,
     "agents": {
         "names": [
             "agent1",
@@ -34,14 +32,11 @@
                 "cooperative",
                 "selfish",
                 "mixed"
-            ],
-            "vn": [
-                "h\u1ee3p t\u00e1c",
-                "\u00edch k\u1ef7",
-                "h\u1ed7n h\u1ee3p"
             ]
         },
         "opponentPersonalityProb": [
+            0,
+            0,
             0
         ]
     },
@@ -151,6 +146,6 @@
     },
     "stopGameWhen": [],
     "agentsCommunicate": false,
-    "repeats": 5,
+    "repeats": 1,
     "isPenalty": true
 }

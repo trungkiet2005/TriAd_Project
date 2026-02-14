@@ -1,10 +1,10 @@
 {
-    "name": "PD3 Noise Qwen2.5-32B-Instruct Noise 0.05",
+    "name": "PD3 Noise openai/gpt-oss-20b Noise 0.05",
     "nRounds": 30,
     "nRoundsIsKnown": true,
-    "llm": "VLLMQwen32B",
-    "MODEL_NAME": "Qwen/Qwen1.5-32B-Chat",
-    "llmDisplayName": "Qwen/Qwen1.5-32B-Chat",
+    "llm": "VLLMQwen14B",
+    "MODEL_NAME": "Qwen/Qwen1.5-14B-Chat",
+    "llmDisplayName": "Qwen/Qwen1.5-14B-Chat",
     "languages": [
         "en",
         "vn"

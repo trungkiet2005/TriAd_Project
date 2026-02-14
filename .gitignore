@@ -28,3 +28,6 @@ resources/results/Qwen2.5-32B-Instruct_vs30round_en_multi
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+analysis_outputs/
+test_verify_results/
