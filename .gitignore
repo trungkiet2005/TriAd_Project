@@ -9,7 +9,10 @@ venv/
 .venv
 env.bak
 venv.bak
-resources/results/
+# resources/results/
+resources/results/gpt-oss-20b_vs30round_en_multi
+resources/results/Mistral-7B-Instruct-v0.3_vs30round_en_multi
+resources/results/Qwen2.5-32B-Instruct_vs30round_en_multi
 .vscode/
 .idea/
 
@@ -25,6 +28,4 @@ resources/results/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
-
-analysis_outputs/
-test_verify_results/
+resources/results/
