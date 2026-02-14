@@ -3,8 +3,8 @@
     "nRounds": 30,
     "nRoundsIsKnown": true,
     "llm": "VLLMQwen32B",
-    "MODEL_NAME": "Qwen/Qwen1.5-32B-Chat",
-    "llmDisplayName": "Qwen/Qwen1.5-32B-Chat",
+    "MODEL_NAME": "Qwen/Qwen2.5-32B-Instruct",
+    "llmDisplayName": "Qwen/Qwen2.5-32B-Instruct",
     "languages": [
         "en",
         "vn"
