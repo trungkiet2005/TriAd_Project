@@ -16,7 +16,7 @@
         "agent2NoiseRate": 0.0,
         "agent3NoiseRate": 0.0
     },
-    "enableHallucinationChecks": true,
+    "enableHallucinationChecks": false,
     "checkers": [
         "time",
         "rule",

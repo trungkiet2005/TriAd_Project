@@ -79,14 +79,22 @@ def main():
         
         print(f"No config file specified. Running ALL {len(config_files)} files in {config_dir}")
 
-    # Initialize checkers (these are stateless or reset per game in factory)
-    checkers = [TimeChecker(), RuleChecker(), AggregationChecker()]
+    # Checkers are now initialized per-config inside the loop
+    # checkers = [TimeChecker(), RuleChecker(), AggregationChecker()] # OLD
 
     for i, config_file in enumerate(config_files):
         print(f"\n[{i+1}/{len(config_files)}] Loading config: {config_file.name}")
         try:
             # Load configuration
             config = FileManager.read_json_file(config_file)
+            
+            # Determine checkers for this specific config
+            if config.get('enableHallucinationChecks', True):
+                checkers = [TimeChecker(), RuleChecker(), AggregationChecker()]
+                print("Hallucination checks: ENABLED")
+            else:
+                checkers = []
+                print("Hallucination checks: DISABLED (Optimized for speed)")
             
             # Extract LLM display name for factory/output purposes
             llm_name = config.get('llmDisplayName', config.get('llm', 'UnknownLLM'))
