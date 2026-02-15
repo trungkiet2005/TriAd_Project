@@ -103,7 +103,7 @@ def main():
             factory = NoiseFairGameFactory(
                 checkers=checkers,
                 llm_name=llm_name,
-                max_workers=16
+                max_workers=4
             )
 
             print(f"Running games for {llm_name}...")

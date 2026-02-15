@@ -114,7 +114,7 @@ class Agent:
             str: The strategy name extracted from LLM response.
         """
         # Retry loop for LLM call and JSON parsing
-        max_retries = 5
+        max_retries = 3
         answer = None
         generated_text = ""
         
